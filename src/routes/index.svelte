@@ -1,2 +1,17 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script>
+</script>
+
+<svelte:head>
+  <title>Flight Club</title>
+</svelte:head>
+
+<div class="home">
+  <h1>Welcome</h1>
+</div>
+
+<style>
+  .home {
+    text-align: center;
+    margin: 50px;
+  }
+</style>
