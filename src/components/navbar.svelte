@@ -23,10 +23,13 @@
 
 <nav>
   <a href="/">Home</a>
+  <a href="/sessions">Sessions</a>
   <a href="/beers">Beers</a>
+  <a href="/members">Members</a>
   {#if user}
   <button on:click={logout}>Logout</button>
   {:else}
   <button on:click={login}>Login</button>
   {/if}
+  <hr>
 </nav>
