@@ -35,12 +35,12 @@ export const sessionModel = [
 ]
 
 export const beerModel = [
-    { key: 'session', text: 'Session', width: 100, show: (beer) => beer.session },
-    { key: 'name', text: 'Name', width: 180, show: (beer) => beer.name },
-    { key: 'brewery', text: 'Brewery', width: 180, show: (beer) => beer.brewery },
-    { key: 'type', text: 'Style', width: 180, show: (beer) => beer.type },
-    { key: 'abv', text: 'ABV', width: 100, show: (beer) => beer.abv },
-    { key: 'score', text: 'Votes', width: 100, show: (beer) => beer.score },
-    { key: 'win', text: 'Result', width: 100, show: (beer) => beer.win ? 'Win' : '' },
-    { key: 'user', text: 'Member', width: 120, show: (beer) => beer.user }
+    { key: 'session', text: 'Session', width: 100, show: (beer: beer) => beer.session },
+    { key: 'name', text: 'Name', width: 180, show: (beer: beer) => beer.name },
+    { key: 'brewery', text: 'Brewery', width: 180, show: (beer: beer) => beer.brewery },
+    { key: 'type', text: 'Style', width: 180, show: (beer: beer) => beer.type },
+    { key: 'abv', text: 'ABV', width: 100, show: (beer: beer) => beer.abv },
+    { key: 'score', text: 'Votes', width: 100, show: (beer: beer) => beer.score },
+    { key: 'win', text: 'Result', width: 100, show: (beer: beer) => beer.win ? 'Win' : '' },
+    { key: 'user', text: 'Member', width: 120, show: (beer: beer) => beer.user }
 ]

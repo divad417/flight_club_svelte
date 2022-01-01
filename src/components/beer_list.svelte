@@ -1,25 +1,45 @@
-<script  lang="ts">
+<script lang="ts">
   import { goto } from '$app/navigation';
-  import { beerModel, beer } from '../models';
-  import { getBeers, getSessionBeers, getUserBeers, getSessionId, getUserId } from '../firebase';
-  export let filter: string = null;
-  export let value: string = null;
+  import beers from '../stores';
+  import { beer, beerModel } from '../models';
+  import { getSessionId, getUserId } from '../firebase';
+  export let filterKey: string = null;
+  export let filterValue: string = null;
   export let editBeer: boolean = false;
+  export let searchable: boolean = true;
   export let sortKey = 'brewery';
   export let ascending = true;
 
-  let beers: Promise<beer[]>;
+  let beerList: beer[] = [];
+  let searchTerm: string = '';
 
   $: {
-    if (filter == 'Session') {
-      beers = getSessionBeers(sortKey, ascending, value);
-    } else if (filter == 'Member') {
-      beers = getUserBeers(sortKey, ascending, value);
-    } else {
-      beers = getBeers(sortKey, ascending);
+    let searchTermLower = searchTerm.toLowerCase();
+    function search(beer: beer) {
+      if (filterKey && beer[filterKey] != filterValue) {
+        return false;
+      }
+      if (!searchable || !searchTerm) {
+        return true;
+      } else {
+        return (
+          (beer.name ? beer.name.toLowerCase().includes(searchTermLower) : false) ||
+          (beer.brewery ? beer.brewery.toLowerCase().includes(searchTermLower) : false) ||
+          (beer.type ? beer.type.toLowerCase().includes(searchTermLower) : false)
+        );
+      }
     }
+    function compare(a: beer, b: beer) {
+      if (a[sortKey] > b[sortKey]) {
+        return ascending ? 1 : -1;
+      } else if (a[sortKey] < b[sortKey]) {
+        return ascending ? -1 : 1;
+      } else {
+        return 0;
+      }
+    }
+    beerList = $beers.filter(search).sort(compare);
   }
-
 
   function onClickColumn(key: string) {
     if (key == sortKey) {
@@ -47,14 +67,17 @@
   }
 </script>
 
+{#if searchable}
+  <input type="search" placeholder="Search" bind:value={searchTerm} />
+{/if}
 <div class="table-div">
   <table>
     <thead>
       <tr>
-        {#each beerModel.filter((key) => key.text != filter) as key}
-          <th width={key.width} on:click={() => onClickColumn(key.key)}>
-            {key.text}
-            {#if key.key == sortKey}
+        {#each beerModel.filter((field) => field.key != filterKey) as field}
+          <th width={field.width} on:click={() => onClickColumn(field.key)}>
+            {field.text}
+            {#if field.key == sortKey}
               <span class="arrow">
                 {#if ascending}
                   &#x25B2;
@@ -68,17 +91,13 @@
       </tr>
     </thead>
     <tbody>
-      {#await beers}
-        <p>Loading ...</p>
-      {:then data}
-        {#each data as beer}
-          <tr>
-            {#each beerModel.filter((key) => key.text != filter) as field}
-              <td on:click={() => onClickBeer(beer, field.text)}>{field.show(beer)}</td>
-            {/each}
-          </tr>
-        {/each}
-      {/await}
+      {#each beerList as beer}
+        <tr>
+          {#each beerModel.filter((field) => field.key != filterKey) as field}
+            <td on:click={() => onClickBeer(beer, field.text)}>{field.show(beer)}</td>
+          {/each}
+        </tr>
+      {/each}
     </tbody>
   </table>
 </div>
