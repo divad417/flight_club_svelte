@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { user } from '$lib/models';
   import { updateUser } from '$lib/firebase';
+  import 'bootstrap/js/dist/modal';
 
   export let user: user;
   $: submitDisabled = !user.name;
@@ -33,7 +34,7 @@
             <div class="col-sm-9">
               <input id="name" bind:value={user.name} class="form-control" type="string" />
             </div>
-            <div class="form-text text-end">For associating with beer data</div>
+            <div class="form-text text-end">This links you with beers</div>
           </div>
         </form>
       </div>

@@ -5,8 +5,8 @@
   let editing: boolean = false;
 
   async function doneEditing() {
-      await updateSession(session);
-      editing = false;
+    await updateSession(session);
+    editing = false;
   }
 </script>
 
@@ -17,5 +17,5 @@
   </div>
 {:else}
   <p class="mx-3" style="max-width: 600px">{session.recap ? session.recap : ''}</p>
-  <button class="btn btn-light mx-2" on:click={() => editing = true}>Edit Recap</button>
+  <button class="btn btn-light mx-2" on:click={() => (editing = true)}>Edit Recap</button>
 {/if}

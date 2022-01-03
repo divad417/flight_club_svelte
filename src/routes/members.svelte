@@ -6,6 +6,5 @@
   <title>FC &#183; Members</title>
 </svelte:head>
 
-
 <h1>Members</h1>
 <MemberList />

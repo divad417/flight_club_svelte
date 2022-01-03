@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { newSessionId, updateSession } from '$lib/firebase';
   import type { session } from '$lib/models';
+  import 'bootstrap/js/dist/modal.js';
 
   export let session: session = {
     id: '',

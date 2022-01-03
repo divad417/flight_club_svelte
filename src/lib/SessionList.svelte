@@ -9,8 +9,8 @@
   export let sortKey: string = 'number';
   export let ascending: boolean = false;
 
-  let sessions: any[] = [];  // All sessions
-  let sessionList: session[] = [];  // Sorted list to display
+  let sessions: any[] = []; // All sessions
+  let sessionList: session[] = []; // Sorted list to display
 
   const unsubscribe = onSnapshot(collection(db, 'sessions'), (snapshot) => {
     sessions = snapshot.docs.map((doc) => {

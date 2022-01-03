@@ -2,11 +2,11 @@
   import { onMount } from 'svelte';
   import { newBeerId, updateBeer, deleteBeer } from '$lib/firebase';
   import type { beer } from '$lib/models';
-  import { Modal } from 'bootstrap';
+  import Modal from 'bootstrap/js/dist/modal.js';
 
-  // Link to the bootstrap Modal HTML element to open programatically
-  let updateBeerElement: Element;
-  let updateBeerModal: Modal;
+  let updateBeerElement: Element = undefined;
+  let updateBeerModal: Modal = undefined;
+  // Link the bootstrap Modal HTML element to open programatically
   onMount(() => {
     updateBeerModal = new Modal(updateBeerElement);
   });
@@ -31,13 +31,13 @@
   $: beer.session = session;
 
   $: {
-    if (currentBeer != null) {
+    if (currentBeer != null && updateBeerModal != undefined) {
       // Pre-populate beer data when used to edit existing beer
       beer = currentBeer;
       updateBeerModal.show();
     }
   }
-  
+
   // Require a session number to create a beer
   $: submitDisabled = beer.session ? false : true;
   // Only allow deletion if editing an existing beer

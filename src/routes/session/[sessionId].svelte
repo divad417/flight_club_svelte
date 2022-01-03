@@ -47,7 +47,14 @@
 <h3>Beers</h3>
 <UpdateBeer {currentBeer} session={session.number} />
 <span class="text-muted">(edit by selecting below)</span>
-<BeerList filterKey="session" sortKey="order" filterValue={session.number} editable={true} on:beerClick={beerClick} searchable={false} />
+<BeerList
+  filterKey="session"
+  sortKey="order"
+  filterValue={session.number}
+  editable={true}
+  on:beerClick={beerClick}
+  searchable={false}
+/>
 <h3>Photos</h3>
 <Photos {session} />
 <hr />

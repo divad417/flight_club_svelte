@@ -3,6 +3,9 @@
   import { auth, provider, updateUser } from '$lib/firebase';
   import { signInWithPopup, signOut, User } from 'firebase/auth';
   import type { user } from '$lib/models';
+  import 'bootstrap/js/dist/collapse.js';
+  import 'bootstrap/js/dist/dropdown.js';
+  import 'bootstrap/js/dist/button.js';
 
   export let user: user = auth.currentUser ? userFromGoogleUser(auth.currentUser) : null;
 
