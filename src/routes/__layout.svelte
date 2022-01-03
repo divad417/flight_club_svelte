@@ -1,34 +1,43 @@
-<script>
-  import Navbar from '../components/navbar.svelte';
-  import Footer from '../components/footer.svelte';
+<script lang="ts">
+  import type { user } from '$lib/models';
+  import Navbar from '$lib/Navbar.svelte';
+  import Footer from '$lib/Footer.svelte';
+  import Login from '$lib/Login.svelte';
+
+  let user: user;
 </script>
 
-<Navbar />
-<div class="content">
+<Navbar bind:user />
+<!-- Require login to view pages -->
+{#if user}
   <slot />
-</div>
-<div class="padding" />
+{:else}
+  <Login />
+{/if}
+<div class="padding" style="height:50vh" />
 <Footer />
 
-<style global>
-  .padding {
-    height: 50vh;
-  }
+<style global lang="scss">
+  @import '../custom';
 
   body {
     margin: 0;
     width: 100vw;
+    overflow-x: hidden;
     font-family: Avenir, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  h1 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
     font-family: 'Alfa Slab One';
     color: #d17101;
-    font-weight: normal;
+    font-weight: 100%;
     line-height: 1;
     margin: 12px;
   }
-
   @font-face {
     font-family: 'Alfa Slab One';
     src: url('/fonts/alpha_slab_one.woff2') format('woff2');

@@ -1,34 +1,56 @@
 <script lang="ts">
+  import { onDestroy, createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
-  import beers from '../stores';
-  import { beer, beerModel } from '../models';
-  import { getSessionId, getUserId } from '../firebase';
-  export let filterKey: string = null;
-  export let filterValue: string = null;
-  export let editBeer: boolean = false;
-  export let searchable: boolean = true;
-  export let sortKey = 'brewery';
-  export let ascending = true;
+  import { collection, onSnapshot } from 'firebase/firestore';
+  import { db, getSessionId, getUserId } from '$lib/firebase';
+  import { beer, beerView } from '$lib/models';
 
+  const dispatch = createEventDispatcher();
+
+  // Component props
+  export let filterKey: string = null;
+  export let filterValue: string | number = null;
+  export let editable: boolean = false;
+  export let searchable: boolean = true;
+  export let sortKey: string = 'brewery';
+  export let ascending: boolean = true;
+
+  let beers: any[] = [];
   let beerList: beer[] = [];
   let searchTerm: string = '';
 
+  // Get the beer data and watch for chanes
+  const unsubscribe = onSnapshot(collection(db, 'beers'), (snapshot) => {
+    beers = snapshot.docs.map((doc) => {
+      return { ...doc.data(), id: doc.id };
+    });
+  });
+  onDestroy(unsubscribe);
+
+  // Reactive block which re-runs when the search term or sort type changes
   $: {
-    let searchTermLower = searchTerm.toLowerCase();
-    function search(beer: beer) {
+    const searchTermLower = searchTerm.toLowerCase();
+
+    // Update the search function
+    function search(beer: beer): boolean {
       if (filterKey && beer[filterKey] != filterValue) {
+        // Exclude beers by filter keys for individual session or member pages
         return false;
       }
       if (!searchable || !searchTerm) {
         return true;
       } else {
         return (
+          // The search box only considers these fields
           (beer.name ? beer.name.toLowerCase().includes(searchTermLower) : false) ||
           (beer.brewery ? beer.brewery.toLowerCase().includes(searchTermLower) : false) ||
-          (beer.type ? beer.type.toLowerCase().includes(searchTermLower) : false)
+          (beer.type ? beer.type.toLowerCase().includes(searchTermLower) : false) ||
+          (beer.user ? beer.user.toLowerCase().includes(searchTermLower) : false)
         );
       }
     }
+
+    // Update the sorting function
     function compare(a: beer, b: beer) {
       if (a[sortKey] > b[sortKey]) {
         return ascending ? 1 : -1;
@@ -38,7 +60,9 @@
         return 0;
       }
     }
-    beerList = $beers.filter(search).sort(compare);
+
+    // Filter and sort the list for rendering
+    beerList = beers.filter(search).sort(compare);
   }
 
   function onClickColumn(key: string) {
@@ -51,11 +75,12 @@
 
   async function onClickBeer(beer: beer, key: string) {
     // A bit hacky but change click behavior for displaying beers on different pages
-    if (editBeer) {
-      goto(`/edit-beer/${beer.id}`);
+    if (editable) {
+      // Dispatch click events to parent to handle more complex actions (ie. editing)
+      dispatch('beerClick', beer);
     } else if (key == 'Session') {
       const id = await getSessionId(beer.session);
-      goto(`/edit-session/${id}`);
+      goto(`/session/${id}`);
     } else if (key == 'Member') {
       try {
         const id = await getUserId(beer.user);
@@ -68,13 +93,16 @@
 </script>
 
 {#if searchable}
-  <input type="search" placeholder="Search" bind:value={searchTerm} />
+  <div class="w-auto mx-2">
+    <input type="search" class="form-control" placeholder="Search" bind:value={searchTerm} />
+    <div class="form-text text-end">Edit beers from the session page</div>
+  </div>
 {/if}
 <div class="table-div">
-  <table>
+  <table class="table table-striped table-hover">
     <thead>
       <tr>
-        {#each beerModel.filter((field) => field.key != filterKey) as field}
+        {#each beerView.filter((field) => field.key != filterKey) as field}
           <th width={field.width} on:click={() => onClickColumn(field.key)}>
             {field.text}
             {#if field.key == sortKey}
@@ -93,7 +121,7 @@
     <tbody>
       {#each beerList as beer}
         <tr>
-          {#each beerModel.filter((field) => field.key != filterKey) as field}
+          {#each beerView.filter((field) => field.key != filterKey) as field}
             <td on:click={() => onClickBeer(beer, field.text)}>{field.show(beer)}</td>
           {/each}
         </tr>

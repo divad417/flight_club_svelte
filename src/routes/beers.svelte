@@ -1,6 +1,10 @@
 <script lang="ts">
-  import BeerList from '../components/beer_list.svelte';
+  import BeerList from '$lib/BeerList.svelte';
 </script>
 
+<svelte:head>
+  <title>FC &#183; Beers</title>
+</svelte:head>
+
 <h1>Beers!</h1>
-<BeerList sortKey={'brewery'} editBeer={false} />
+<BeerList />

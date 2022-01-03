@@ -1,13 +1,12 @@
 <script lang="ts">
-    import { Button } from 'sveltestrap';
-    let available: string;
-    if (window.indexedDB) {
-        available = 'are';
-    } else {
-        available = 'are not';
-    }
+  import UpdateSession from '$lib/UpdateSession.svelte';
+  import SessionList from '$lib/SessionList.svelte';
 </script>
 
+<svelte:head>
+  <title>FC &#183; Sessions</title>
+</svelte:head>
+
 <h1>Sessions</h1>
-<Button href='#'>Add Session</Button>
-Indexed DB {available} available.
+<UpdateSession />
+<SessionList />
