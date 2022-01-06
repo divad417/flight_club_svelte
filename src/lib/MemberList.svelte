@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { collection, onSnapshot } from 'firebase/firestore';
-  import { db } from '$lib/firebase';
-  import { user, userView } from '$lib/models';
+  import { user, userView, usersToCsv } from '$lib/models';
+  import type { Unsubscribe } from '@firebase/util';
 
   // Component props
   export let sortKey: string = null;
@@ -11,14 +10,30 @@
 
   let members: any[] = [];
   let memberList: user[] = [];
+  const onUpdate = (update: any[]) => {
+    members = update;
+  };
+  let unsubscribe: Unsubscribe;
 
-  const unsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
-    members = snapshot.docs.map((doc) => {
-      return { ...doc.data(), id: doc.id };
-    });
+  onMount(async () => {
+    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
+    const firebase = await import('$lib/firebase');
+    
+    // Get users from the database and watch for changes
+    unsubscribe = firebase.watchUsers(onUpdate);
   });
-  onDestroy(unsubscribe);
+  onDestroy(() => unsubscribe());
 
+  // Handle user inputs to re-sort, triggers the reactive block below
+  function onClickColumn(key: string) {
+    if (key == sortKey) {
+      ascending = !ascending;
+    } else {
+      sortKey = key;
+    }
+  }
+
+  // Reactive block which re-runs when the sort type changes
   $: {
     function compare(a: user, b: user) {
       if (a[sortKey] > b[sortKey]) {
@@ -32,15 +47,8 @@
     memberList = members.sort(compare);
   }
 
-  function onClickColumn(key: string) {
-    if (key == sortKey) {
-      ascending = !ascending;
-    } else {
-      sortKey = key;
-    }
-  }
-
   function onClickMember(user: user) {
+    // Goto a specific member page
     goto(`/member/${user.id}`);
   }
 </script>
@@ -76,6 +84,9 @@
     </tbody>
   </table>
 </div>
+<button type="button" class="btn btn-light mx-2" on:click={() => usersToCsv(members)}
+  >Download as CSV</button
+>
 
 <style>
   .arrow {

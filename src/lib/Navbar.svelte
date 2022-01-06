@@ -1,44 +1,47 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
-  import { auth, provider, updateUser } from '$lib/firebase';
-  import { signInWithPopup, signOut, User } from 'firebase/auth';
+  import { onMount, onDestroy } from 'svelte';
   import type { user } from '$lib/models';
-  import 'bootstrap/js/dist/collapse.js';
-  import 'bootstrap/js/dist/dropdown.js';
-  import 'bootstrap/js/dist/button.js';
+  import type { Unsubscribe } from '@firebase/util';
 
-  export let user: user = auth.currentUser ? userFromGoogleUser(auth.currentUser) : null;
+  let navbarElement: Element;
+  let navbarCollapse: any;
 
-  function login() {
-    signInWithPopup(auth, provider);
-  }
-  function logout() {
-    signOut(auth);
-  }
+  export let user: user = null;
+  let login: () => void;
+  let logout: () => void;
+  const onUpdate = (updatedUser: user) => {
+    user = updatedUser;
+  };
+  let unsubscribe: Unsubscribe;
 
-  // Watch for login/logout events from the auth library
-  const unsubscribe = auth.onAuthStateChanged((googleUser) => {
-    if (googleUser) {
-      // Add or update the user to our database on login
-      user = userFromGoogleUser(googleUser);
-      updateUser(user);
-    } else {
-      user = null;
-    }
+  onMount(async () => {
+    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
+    const Collapse = (await import('bootstrap/js/dist/collapse.js')).default;
+    const firebase = await import('$lib/firebase');
+    await import('bootstrap/js/dist/dropdown.js');
+    await import('bootstrap/js/dist/button.js');
+
+    // Need this object accessible to open the modal box programatically
+    navbarCollapse = new Collapse(navbarElement, { toggle: false });
+
+    user = firebase.currentUser();
+    login = firebase.login;
+    logout = firebase.logout;
+
+    // Watch for login/logout events from the auth library
+    unsubscribe = firebase.watchAuthState(onUpdate);
   });
+  onDestroy(() => unsubscribe());
 
-  function userFromGoogleUser(googleUser: User) {
-    return {
-      id: googleUser.uid,
-      full_name: googleUser.displayName,
-      email: googleUser.email,
-      photoURL: googleUser.photoURL
-    };
+  function closeNavbar() {
+    // Bootstrap navbars don't auto-close, so added that feature
+    if (navbarCollapse != undefined) {
+      navbarCollapse.hide();
+    }
   }
-
-  onDestroy(unsubscribe);
 </script>
 
+<svelte:window on:click={closeNavbar} />
 <nav class="navbar navbar-expand-md navbar-light container-fluid">
   <a href="/" class="me-3">
     <img src="/img/Flight-Club.svg" alt="flight club logo" style="max-width: 150px" />
@@ -53,16 +56,16 @@
   >
     <span class="navbar-toggler-icon" />
   </button>
-  <div id="navbarNav" class="collapse navbar-collapse">
+  <div id="navbarNav" class="collapse navbar-collapse mt-2" bind:this={navbarElement}>
     <ul class="navbar-nav">
       <li class="nav-item">
-        <a class="nav-link" href="/sessions">Sessions</a>
+        <a class="nav-link px-2" href="/sessions">Sessions</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/beers">Beers</a>
+        <a class="nav-link px-2" href="/beers">Beers</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/members">Members</a>
+        <a class="nav-link px-2" href="/members">Members</a>
       </li>
     </ul>
     <hr class="dropdown-divider" />
@@ -70,11 +73,12 @@
       {#if user}
         <li class="nav-item dropdown">
           <a
-            class="nav-link"
+            class="nav-link px-2"
             href={'#'}
             role="button"
             data-bs-toggle="dropdown"
             aria-expanded="false"
+            on:click|stopPropagation
           >
             {user.full_name}
             <img
@@ -85,7 +89,7 @@
             />
           </a>
           <div class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-            <a class="dropdown-item" href={'/member/' + auth.currentUser.uid}>Profile</a>
+            <a class="dropdown-item" href={'/member/' + user.id}>Profile</a>
             <hr class="dropdown-divider" />
             <a href={'#'} class="dropdown-item" on:click={logout}>Sign Out</a>
           </div>

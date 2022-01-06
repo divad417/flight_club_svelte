@@ -1,10 +1,13 @@
 <script lang="ts">
-  import { auth, provider } from '$lib/firebase';
-  import { signInWithPopup } from 'firebase/auth';
+  // Component to show when there is no valid user
+  import { onMount } from 'svelte';
+  let login: () => void;
 
-  function login() {
-    signInWithPopup(auth, provider);
-  }
+  onMount(async () => {
+    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
+    const firebase = await import('$lib/firebase');
+    login = firebase.login;
+  })
 </script>
 
 <div class="text-center m-5">

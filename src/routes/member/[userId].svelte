@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/stores';
-  import { onSnapshot, doc } from 'firebase/firestore';
-  import { db, auth } from '$lib/firebase';
+  import type { user } from '$lib/models';
+  import type { Unsubscribe } from '@firebase/util';
   import MemberInfo from '$lib/MemberInfo.svelte';
   import BeerList from '$lib/BeerList.svelte';
   import UpdateProfile from '$lib/UpdateProfile.svelte';
@@ -10,11 +10,19 @@
   let user: any = { name: null };
   let id: string = $page.params.userId;
 
-  const unsubscribe = onSnapshot(doc(db, 'users', id), (snapshot) => {
-    user = snapshot.data();
-    user.id = snapshot.id;
+  const onUpdate = (update: any) => {
+    user = update;
+  };
+  let unsubscribe: Unsubscribe;
+
+  onMount(async () => {
+    const firebase = await import('$lib/firebase');
+
+    user = firebase.currentUser();
+    // Get user from the database and watch for changes
+    unsubscribe = firebase.watchUser(id, onUpdate);
   });
-  onDestroy(unsubscribe);
+  onDestroy(() => unsubscribe());
 </script>
 
 <svelte:head>
@@ -23,7 +31,7 @@
 
 <h1>{user.name}</h1>
 <MemberInfo {user} />
-{#if id == auth.currentUser.uid}
+{#if id == user.id}
   <UpdateProfile {user} />
 {/if}
 <h1>Beers</h1>

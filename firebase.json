@@ -10,8 +10,14 @@
     ]
   },
   "hosting": {
+    "predeploy": "npm run build",
     "public": "build",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "redirects": [{
+      "source": "/@(sessions|session|beers|members|member){,/**}",
+      "destination": "/",
+      "type": 301
+    }]
   },
   "storage": {
     "rules": "storage.rules"

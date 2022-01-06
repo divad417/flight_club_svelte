@@ -1,3 +1,4 @@
+// Session type matching the firebase document fields
 export interface session {
   id?: string;
   number: number;
@@ -12,6 +13,7 @@ export interface session {
   recap?: string;
 }
 
+// Beer type matching the firebase document fields
 export interface beer {
   id?: string;
   session: number;
@@ -26,6 +28,7 @@ export interface beer {
   user: string;
 }
 
+// User type matching the firebase document fields
 export interface user {
   id: string;
   name?: string;
@@ -40,17 +43,19 @@ export interface user {
   notes?: object[];
 }
 
+// Information on how to display sessions in a table
 export const sessionView = [
   { key: 'number', text: 'Session', width: 100, show: (session: session) => session.number },
   { key: 'date', text: 'Date', width: 100, show: (session: session) => session.date },
   { key: 'winner', text: 'Winner', width: 120, show: (session: session) => session.winner ?? '' },
-  { key: 'location', text: 'Location', width: 120, show: (session: session) => session.location ?? ''},
+  { key: 'location', text: 'Location', width: 120, show: (session: session) => session.location ?? '' },
   { key: 'beer', text: 'Winning Beer', width: 180, show: (session: session) => session.beer ?? '' },
   { key: 'brewery', text: 'Brewery', width: 180, show: (session: session) => session.brewery ?? '' },
   { key: 'count', text: 'Entries', width: 100, show: (session: session) => session.count ?? '' },
   { key: 'avg_abv', text: 'Avg ABV', width: 120, show: (session: session) => (session.avg_abv ? session.avg_abv.toFixed(1) : '') }
 ];
 
+// Information on how to display beers in a table
 export const beerView = [
   { key: 'session', text: 'Session', width: 100, show: (beer: beer) => beer.session },
   { key: 'name', text: 'Name', width: 180, show: (beer: beer) => beer.name ?? '' },
@@ -62,6 +67,7 @@ export const beerView = [
   { key: 'user', text: 'Member', width: 120, show: (beer: beer) => beer.user ?? '' }
 ];
 
+// Information on how to display users in a table
 export const userView = [
   { key: 'name', text: 'Member', width: 120, show: (user: user) => user.name ?? '' },
   { key: 'wins', text: 'Wins', width: 100, show: (user: user) => user.wins ?? '' },
@@ -72,3 +78,35 @@ export const userView = [
   { key: 'full_name', text: 'Google Name', width: 180, show: (user: user) => user.full_name },
   { key: 'email', text: 'Email', width: 180, show: (user: user) => user.email }
 ];
+
+export function sessionsToCsv(sessions: session[]) {
+  const keys = sessionView.map(item => item.key);
+  downloadCsv('sessions.csv', keys, sessions);
+}
+
+export function beersToCsv(beers: beer[]) {
+  const keys = beerView.map(item => item.key);
+  // These keys are in the data type but displayed, so need to add manually
+  keys.push('order', 'style');
+  downloadCsv('beers.csv', keys, beers);
+}
+
+export function usersToCsv(users: user[]) {
+  const keys = userView.map(item => item.key);
+  downloadCsv('users.csv', keys, users);
+}
+
+function downloadCsv(filename: string, keys: Array<string>, data: Array<object>) {
+  // Join the data into csv format with a header
+  const dataText = data.map(data => keys.map(key => data[key]).join(',')).join('\n');
+  const csvText = [keys.join(','), dataText].join('\n');
+
+  // This makes the browser "download" a file from the text string created
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csvText));
+  element.setAttribute('download', filename);
+  element.style.display = 'none';
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}

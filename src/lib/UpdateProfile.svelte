@@ -1,7 +1,15 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { user } from '$lib/models';
-  import { updateUser } from '$lib/firebase';
-  import 'bootstrap/js/dist/modal';
+
+  let updateUser: (user: user) => void;
+
+  onMount(async () => {
+    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
+    await import('bootstrap/js/dist/modal.js');
+    const firebase = await import('$lib/firebase');
+    updateUser = firebase.updateUser;
+  });
 
   export let user: user;
   $: submitDisabled = !user.name;

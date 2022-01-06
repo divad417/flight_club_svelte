@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { onSnapshot, doc } from 'firebase/firestore';
-  import { db, deleteSession } from '$lib/firebase';
   import type { beer } from '$lib/models';
+  import type { Unsubscribe } from '@firebase/util';
   import SessionInfo from '$lib/SessionInfo.svelte';
   import Recap from '$lib/Recap.svelte';
   import UpdateBeer from '$lib/UpdateBeer.svelte';
@@ -15,24 +14,32 @@
 
   let id: string = $page.params.sessionId;
   let session: any = { number: null };
-  let currentBeer: beer = null;
+  let onDelete: () => void;
 
-  // Get the session data and watch for changes
-  const unsubscribe = onSnapshot(doc(db, 'sessions', id), (snapshot) => {
-    session = snapshot.data();
-    session.id = snapshot.id;
+  const onUpdate = (update: any) => {
+    session = update;
+  };
+  let unsubscribe: Unsubscribe;
+
+  onMount(async () => {
+    const firebase = await import('$lib/firebase');
+
+    // Get the session data and watch for changes
+    unsubscribe = firebase.watchSession(id, onUpdate);
+    
+    onDelete = () => {
+      if (confirm(`Delete session ${session.number}?`)) {
+        firebase.deleteSession(session.id);
+        goto('/sessions');
+      }
+    };
   });
-  onDestroy(unsubscribe);
+  onDestroy(() => unsubscribe());
 
-  function onDelete() {
-    if (confirm(`Delete session ${session.number}?`)) {
-      deleteSession(id);
-      goto('/sessions');
-    }
-  }
-
+  // Link things to allow clicking beers to edit them
+  let openBeerEditor: (data: beer) => void;
   function beerClick(event: CustomEvent) {
-    currentBeer = event.detail;
+    openBeerEditor(event.detail);
   }
 </script>
 
@@ -45,7 +52,7 @@
 <h3>Recap</h3>
 <Recap bind:session />
 <h3>Beers</h3>
-<UpdateBeer {currentBeer} session={session.number} />
+<UpdateBeer bind:openBeerEditor session={session.number} />
 <span class="text-muted">(edit by selecting below)</span>
 <BeerList
   filterKey="session"

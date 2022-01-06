@@ -4,12 +4,12 @@
   import Footer from '$lib/Footer.svelte';
   import Login from '$lib/Login.svelte';
 
-  let user: user;
+  let user: user = null;
 </script>
 
 <Navbar bind:user />
 <!-- Require login to view pages -->
-{#if user}
+{#if user }
   <slot />
 {:else}
   <Login />

@@ -1,8 +1,18 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { newSessionId, updateSession } from '$lib/firebase';
+  import { onMount } from 'svelte';
   import type { session } from '$lib/models';
-  import 'bootstrap/js/dist/modal.js';
+
+  let newSessionId: () => string;
+  let updateSession: (session: session) => Promise<void>;
+
+  onMount(async () => {
+    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
+    await import('bootstrap/js/dist/modal.js');
+    const firebase = await import('$lib/firebase');
+    newSessionId = firebase.newSessionId;
+    updateSession = firebase.updateSession;
+  });
 
   export let session: session = {
     id: '',

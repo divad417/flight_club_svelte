@@ -1,19 +1,26 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { newBeerId, updateBeer, deleteBeer } from '$lib/firebase';
   import type { beer } from '$lib/models';
-  import Modal from 'bootstrap/js/dist/modal.js';
 
+  // Get the bootstrap Modal HTML element to open programatically
   let updateBeerElement: Element = undefined;
-  let updateBeerModal: Modal = undefined;
-  // Link the bootstrap Modal HTML element to open programatically
-  onMount(() => {
+  let updateBeerModal: any = undefined;
+  let newBeerId: () => string;
+  let updateBeer: (beer: beer) => void;
+  let deleteBeer: (id: string) => void;
+
+  onMount(async () => {
+    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
+    const Modal = (await import('bootstrap/js/dist/modal.js')).default;
     updateBeerModal = new Modal(updateBeerElement);
+
+    const firebase = await import('$lib/firebase');
+    newBeerId = firebase.newBeerId;
+    updateBeer = firebase.updateBeer;
+    deleteBeer = firebase.deleteBeer;
   });
 
-  export let currentBeer: beer = null;
-  export let session: number;
-  let beer: beer = {
+  let newBeer: beer = {
     id: '',
     session: null,
     name: '',
@@ -26,44 +33,38 @@
     win: false,
     user: ''
   };
+  let editBeer = newBeer;
 
   // Update the session number when the data is received
-  $: beer.session = session;
+  export let session: number;
+  $: newBeer.session = session;
 
-  $: {
-    if (currentBeer != null && updateBeerModal != undefined) {
-      // Pre-populate beer data when used to edit existing beer
-      beer = currentBeer;
-      updateBeerModal.show();
-    }
+  let addingNewBeer = false;
+  export function openBeerEditor(data: beer, newBeer: boolean = false) {
+    addingNewBeer = newBeer;
+    editBeer = { ...data };
+    updateBeerModal.show();
   }
 
   // Require a session number to create a beer
-  $: submitDisabled = beer.session ? false : true;
-  // Only allow deletion if editing an existing beer
-  $: deleteHidden = currentBeer ? false : true;
+  $: submitDisabled = editBeer.session ? false : true;
 
   function onSubmit() {
-    if (!currentBeer) {
-      beer.id = newBeerId();
+    if (addingNewBeer) {
+      editBeer.id = newBeerId();
+      addingNewBeer = false;
     }
-    updateBeer(beer);
-    currentBeer = null;
+    updateBeer(editBeer);
   }
 
   function onDelete() {
     if (confirm('Delete this beer?')) {
-      deleteBeer(beer.id);
+      deleteBeer(editBeer.id);
     }
   }
 </script>
 
-<button
-  type="button"
-  class="btn btn-light mx-2"
-  data-bs-toggle="modal"
-  data-bs-target="#updateBeer"
->
+<button type="button" class="btn btn-light mx-2" on:click={() => openBeerEditor(newBeer, true)}>
   Add Beer
 </button>
 
@@ -71,7 +72,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title m-0">{currentBeer ? 'Edit' : 'Add'} Beer</h3>
+        <h3 class="modal-title m-0">{addingNewBeer ? 'Add' : 'Edit'} Beer</h3>
         <button type="button" class="btn-close" data-bs-dismiss="modal" />
       </div>
       <div class="modal-body">
@@ -79,19 +80,24 @@
           <div class="row mb-3 align-items-center">
             <label for="session" class="col-sm-3 col-form-label">Session</label>
             <div class="col">
-              <input id="session" bind:value={beer.session} class="form-control" type="number" />
+              <input
+                id="session"
+                bind:value={editBeer.session}
+                class="form-control"
+                type="number"
+              />
             </div>
           </div>
           <div class="row mb-3 align-items-center">
             <label for="order" class="col-sm-3 col-form-label">Order</label>
             <div class="col">
-              <input id="order" bind:value={beer.order} class="form-control" type="text" />
+              <input id="order" bind:value={editBeer.order} class="form-control" type="text" />
             </div>
           </div>
           <div class="row mb-3 align-items-center">
             <label for="user" class="col-sm-3 col-form-label">Member</label>
             <div class="col">
-              <input id="user" bind:value={beer.user} class="form-control" type="text" />
+              <input id="user" bind:value={editBeer.user} class="form-control" type="text" />
             </div>
           </div>
           <div class="row mb-3 align-items-center">
@@ -99,7 +105,7 @@
             <div class="col">
               <input
                 id="score"
-                bind:value={beer.score}
+                bind:value={editBeer.score}
                 class="form-control"
                 type="number"
                 inputmode="decimal"
@@ -109,32 +115,37 @@
           <div class="row mb-3 align-items-center">
             <label for="win" class="col-sm-3 col-form-label">Win</label>
             <div class="col">
-              <input id="win" bind:checked={beer.win} class="form-check-input" type="checkbox" />
+              <input
+                id="win"
+                bind:checked={editBeer.win}
+                class="form-check-input"
+                type="checkbox"
+              />
             </div>
           </div>
           <hr />
           <div class="row mb-3 align-items-center">
             <label for="name" class="col-sm-3 col-form-label">Beer Name</label>
             <div class="col">
-              <input id="name" bind:value={beer.name} class="form-control" type="text" />
+              <input id="name" bind:value={editBeer.name} class="form-control" type="text" />
             </div>
           </div>
           <div class="row mb-3 align-items-center">
             <label for="brewery" class="col-sm-3 col-form-label">Brewery</label>
             <div class="col">
-              <input id="brewery" bind:value={beer.brewery} class="form-control" type="text" />
+              <input id="brewery" bind:value={editBeer.brewery} class="form-control" type="text" />
             </div>
           </div>
           <div class="row mb-3 align-items-center">
             <label for="type" class="col-sm-3 col-form-label">Beer Type</label>
             <div class="col">
-              <input id="type" bind:value={beer.type} class="form-control" type="text" />
+              <input id="type" bind:value={editBeer.type} class="form-control" type="text" />
             </div>
           </div>
           <div class="row mb-3 align-items-center">
             <label for="style" class="col-sm-3 col-form-label">Specific Type</label>
             <div class="col">
-              <input id="style" bind:value={beer.style} class="form-control" type="text" />
+              <input id="style" bind:value={editBeer.style} class="form-control" type="text" />
             </div>
           </div>
           <div class="row mb-3 align-items-center">
@@ -142,7 +153,7 @@
             <div class="col">
               <input
                 id="abv"
-                bind:value={beer.abv}
+                bind:value={editBeer.abv}
                 class="form-control"
                 type="number"
                 inputmode="decimal"
@@ -157,7 +168,7 @@
           class="btn btn-light"
           on:click={onDelete}
           data-bs-dismiss="modal"
-          hidden={deleteHidden}>Delete</button
+          hidden={addingNewBeer}>Delete</button
         >
         <button
           type="button"

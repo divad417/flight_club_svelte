@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { onDestroy, createEventDispatcher } from 'svelte';
+  import { onMount, onDestroy, createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
-  import { collection, onSnapshot } from 'firebase/firestore';
-  import { db, getSessionId, getUserId } from '$lib/firebase';
-  import { beer, beerView } from '$lib/models';
+  import { beer, beerView, beersToCsv } from '$lib/models';
+  import type { Unsubscribe } from '@firebase/util';
 
   const dispatch = createEventDispatcher();
 
@@ -18,14 +17,36 @@
   let beers: any[] = [];
   let beerList: beer[] = [];
   let searchTerm: string = '';
+  let getSessionId: (session: number) => Promise<string>;
+  let getUserId: (user: string) => Promise<string>;
+  const onUpdate = (update: any[]) => {
+    beers = update;
+  };
+  let unsubscribe: Unsubscribe;
 
-  // Get the beer data and watch for chanes
-  const unsubscribe = onSnapshot(collection(db, 'beers'), (snapshot) => {
-    beers = snapshot.docs.map((doc) => {
-      return { ...doc.data(), id: doc.id };
-    });
+
+  onMount(async () => {
+    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
+    const firebase = await import('$lib/firebase');
+
+    getSessionId = firebase.getSessionId;
+    getUserId = firebase.getUserId;
+
+    // Get beers from the database and watch for updates
+    unsubscribe = firebase.watchBeers(onUpdate);
   });
-  onDestroy(unsubscribe);
+  onDestroy(() => unsubscribe());
+
+  // Get beers from the database and watch for changes
+
+  // Handle user inputs to re-sort, triggers the reactive block below
+  function onClickColumn(key: string) {
+    if (key == sortKey) {
+      ascending = !ascending;
+    } else {
+      sortKey = key;
+    }
+  }
 
   // Reactive block which re-runs when the search term or sort type changes
   $: {
@@ -34,7 +55,7 @@
     // Update the search function
     function search(beer: beer): boolean {
       if (filterKey && beer[filterKey] != filterValue) {
-        // Exclude beers by filter keys for individual session or member pages
+        // Exclude beers by filter keys for session or member page
         return false;
       }
       if (!searchable || !searchTerm) {
@@ -65,24 +86,18 @@
     beerList = beers.filter(search).sort(compare);
   }
 
-  function onClickColumn(key: string) {
-    if (key == sortKey) {
-      ascending = !ascending;
-    } else {
-      sortKey = key;
-    }
-  }
-
   async function onClickBeer(beer: beer, key: string) {
     // A bit hacky but change click behavior for displaying beers on different pages
     if (editable) {
       // Dispatch click events to parent to handle more complex actions (ie. editing)
       dispatch('beerClick', beer);
     } else if (key == 'Session') {
+      // Goto a specific session page
       const id = await getSessionId(beer.session);
       goto(`/session/${id}`);
     } else if (key == 'Member') {
       try {
+        // Goto a specific member page
         const id = await getUserId(beer.user);
         goto(`/member/${id}`);
       } catch (error) {
@@ -94,10 +109,17 @@
 
 {#if searchable}
   <div class="w-auto mx-2">
-    <input type="search" class="form-control" placeholder="Search" bind:value={searchTerm} />
-    <div class="form-text text-end">Edit beers from the session page</div>
+    <input
+      type="search"
+      class="form-control has-clear"
+      style="max-width: 768px"
+      placeholder="Search"
+      bind:value={searchTerm}
+    />
+    <div class="form-text text-end" style="max-width: 768px">Edit beers from the session page</div>
   </div>
 {/if}
+
 <div class="table-div">
   <table class="table table-striped table-hover">
     <thead>
@@ -129,6 +151,11 @@
     </tbody>
   </table>
 </div>
+{#if searchable}
+  <button type="button" class="btn btn-light mx-2" on:click={() => beersToCsv(beers)}
+    >Download as CSV</button
+  >
+{/if}
 
 <style>
   .arrow {

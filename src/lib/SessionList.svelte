@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { collection, onSnapshot } from 'firebase/firestore';
-  import { db } from '$lib/firebase';
-  import { session, sessionView } from '$lib/models';
+  import { session, sessionView, sessionsToCsv } from '$lib/models';
+  import type { Unsubscribe } from '@firebase/util';
 
   // Component props
   export let sortKey: string = 'number';
@@ -12,14 +11,30 @@
   let sessions: any[] = []; // All sessions
   let sessionList: session[] = []; // Sorted list to display
 
-  const unsubscribe = onSnapshot(collection(db, 'sessions'), (snapshot) => {
-    sessions = snapshot.docs.map((doc) => {
-      return { ...doc.data(), id: doc.id };
-    });
-  });
-  onDestroy(unsubscribe);
+  const onChange = (update: any[]) => {
+    sessions = update;
+  };
+  let unsubscribe: Unsubscribe;
 
-  // Reactive block to handle re-sorting the list
+  onMount(async () => {
+    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
+    const firebase = await import('$lib/firebase');
+
+    // Get sessions from the database and watch for changes
+    unsubscribe = firebase.watchSessions(onChange);
+  });
+  onDestroy(() => unsubscribe());
+
+  // Handle user inputs to re-sort, triggers the reactive block below
+  function onClickColumn(key: string) {
+    if (key == sortKey) {
+      ascending = !ascending;
+    } else {
+      sortKey = key;
+    }
+  }
+
+  // Reactive block which re-runs when the sort type changes
   $: {
     function compare(a: session, b: session) {
       if (a[sortKey] > b[sortKey]) {
@@ -33,15 +48,8 @@
     sessionList = sessions.sort(compare);
   }
 
-  function onClickColumn(key: string) {
-    if (key == sortKey) {
-      ascending = !ascending;
-    } else {
-      sortKey = key;
-    }
-  }
-
   function onClickSession(session: session) {
+    // Go to a specific session page
     goto(`/session/${session.id}`);
   }
 </script>
@@ -77,6 +85,9 @@
     </tbody>
   </table>
 </div>
+<button type="button" class="btn btn-light mx-2" on:click={() => sessionsToCsv(sessions)}
+  >Download as CSV</button
+>
 
 <style>
   .arrow {
