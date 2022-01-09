@@ -17,14 +17,13 @@
   onMount(async () => {
     // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
     const Collapse = (await import('bootstrap/js/dist/collapse.js')).default;
-    const { currentUser, login, logout, watchAuthState } = await import('$lib/firebase');
+    const { login, logout, watchAuthState } = await import('$lib/firebase');
     await import('bootstrap/js/dist/dropdown.js');
     await import('bootstrap/js/dist/button.js');
 
     // Need this object accessible to open the modal box programatically
     navbarCollapse = new Collapse(navbarElement, { toggle: false });
 
-    $user = currentUser();
     onLogin = login;
     onLogout = logout;
 

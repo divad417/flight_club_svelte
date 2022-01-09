@@ -41,6 +41,27 @@ export interface Member {
   wins?: number;
   win_rate?: number;
   notes?: object[];
+  roles: Roles;
+}
+
+export interface Roles {
+  admin: boolean;
+  editor: boolean;
+  viewer: boolean;
+}
+
+export const userDefaults: Member = {
+  id: null,
+  name: null,
+  full_name: null,
+  email: null,
+  photoURL: null,
+  notes: [],
+  roles: {
+    admin: false,
+    editor: true,
+    viewer: true 
+  }
 }
 
 // Information on how to display sessions in a table
@@ -76,7 +97,13 @@ export const memberView = [
   { key: 'avg_score', text: 'Avg Score', width: 120, show: (member: Member) => (member.avg_score ? member.avg_score.toFixed(1) : '') },
   { key: 'win_rate', text: 'Win Rate', width: 120, show: (member: Member) => (member.win_rate ? member.win_rate.toFixed(3) : '') },
   { key: 'full_name', text: 'Google Name', width: 180, show: (member: Member) => member.full_name },
-  { key: 'email', text: 'Email', width: 180, show: (member: Member) => member.email }
+  { key: 'email', text: 'Email', width: 220, show: (member: Member) => member.email }
+];
+
+export const roleView = [
+  { key: 'admin', text: 'Admin', width: 80, show: (member: Member) => member.roles.admin },
+  { key: 'editor', text: 'Editor', width: 80, show: (member: Member) => member.roles.editor },
+  { key: 'viewer', text: 'Viewer', width: 80, show: (member: Member) => member.roles.viewer }
 ];
 
 export function sessionsToCsv(sessions: Session[]) {

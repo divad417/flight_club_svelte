@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { Member, memberView, membersToCsv } from '$lib/models';
+  import { Member, memberView, roleView, membersToCsv } from '$lib/models';
+  import { user } from '$lib/stores';
   import type { Unsubscribe } from '@firebase/util';
 
   // Component props
@@ -14,13 +15,17 @@
     members = update;
   };
   let unsubscribe: Unsubscribe;
+  let onClickRole: (member: Member) => void;
 
   onMount(async () => {
     // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
-    const { watchMembers } = await import('$lib/firebase');
-    
+    const { watchMembers, updateMember } = await import('$lib/firebase');
+
     // Get members from the database and watch for changes
     unsubscribe = watchMembers(onUpdate);
+    onClickRole = (member) => {
+      updateMember(member);
+    }
   });
   onDestroy(() => unsubscribe());
 
@@ -51,6 +56,7 @@
     // Goto a specific member page
     goto(`/member/${member.id}`);
   }
+
 </script>
 
 <div class="table-div">
@@ -71,6 +77,13 @@
             {/if}
           </th>
         {/each}
+        {#if $user.roles.admin}
+          {#each roleView as field}
+            <th class="text-center" width={field.width}>
+              {field.text}
+            </th>
+          {/each}
+        {/if}
       </tr>
     </thead>
     <tbody>
@@ -79,6 +92,19 @@
           {#each memberView as field}
             <td on:click={() => onClickMember(member)}>{field.show(member)}</td>
           {/each}
+          {#if $user.roles.admin}
+            {#each roleView as field}
+              <td class="text-center">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  bind:checked={member.roles[field.key]}
+                  disabled={member.id == $user.id}
+                  on:change={() => onClickRole(member)}
+                />
+              </td>
+            {/each}
+          {/if}
         </tr>
       {/each}
     </tbody>

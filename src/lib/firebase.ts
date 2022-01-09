@@ -1,7 +1,7 @@
 import type { Beer, Session, Member } from '$lib/models';
 import type { Unsubscribe } from '@firebase/util';
+import { userDefaults } from '$lib/models';
 
-export let currentUser: () => Member | null;
 export let login: () => void;
 export let logout: () => void;
 export let watchAuthState: (onChange: (member: Member) => void) => Unsubscribe;
@@ -20,6 +20,7 @@ export let watchBeers: (onChange: (beers: any[]) => void) => Unsubscribe;
 
 export let getMemberId: (member: string) => Promise<string>;
 export let updateMember: (member: Member) => Promise<void>;
+let updateMemberDefaults: (memberId: string) => Promise<void>;
 export let watchMember: (id: string, onChange: (member: any) => void) => Unsubscribe;
 export let watchMembers: (onChange: (members: any[]) => void) => Unsubscribe;
 
@@ -35,17 +36,6 @@ const firebaseConfig = {
   appId: '1:34180351223:web:df3852031092f57f333ff2'
 };
 
-// Convert the Google user format to our database format
-const userFromGoogleUser = (googleUser: any): Member => {
-  return {
-    id: googleUser.uid,
-    full_name: googleUser.displayName,
-    email: googleUser.email,
-    photoURL: googleUser.photoURL,
-    notes: []
-  };
-}
-
 // Hack to prevent svelte from running firebase code on the server, see https://github.com/sveltejs/kit/issues/1650
 
 import { initializeApp } from '@firebase/app';
@@ -58,6 +48,7 @@ import {
   setDoc,
   query,
   where,
+  getDoc,
   getDocs,
   deleteDoc,
   updateDoc,
@@ -87,17 +78,27 @@ enableIndexedDbPersistence(db)
 
 // Auth functions
 
-currentUser = () =>  auth.currentUser ? userFromGoogleUser(auth.currentUser) : null;
 login = () => { signInWithPopup(auth, provider); }
 logout = () => { signOut(auth); }
+
+// Convert the Google user format to our database format
+const userFromGoogleUser = (googleUser: any): any => {
+  return {
+    id: googleUser.uid,
+    full_name: googleUser.displayName,
+    email: googleUser.email,
+    photoURL: googleUser.photoURL
+  };
+}
 
 watchAuthState = (onChange) => {
   return auth.onAuthStateChanged((googleUser) => {
     if (googleUser) {
       // Add or update the user to our database on login
       const user = userFromGoogleUser(googleUser);
-      onChange(user);
-      updateMember(user);
+      onChange(user); // Populates the ID in the user store, allowing it to subscribe to the firestore user
+      updateMember(user); // Updates the firestore user with any changes from the google user, creating a new user if necessary
+      updateMemberDefaults(user.id); // Populate any defaults for new users or model updates
     } else {
       onChange(null);
     }
@@ -188,6 +189,14 @@ getMemberId = async (name) => {
 updateMember = async (member) => {
   const memberRef = doc(db, 'users', member.id);
   await setDoc(memberRef, member, { merge: true });
+}
+
+updateMemberDefaults = async (memberId) => {
+  const memberRef = doc(db, 'users', memberId);
+  const memberDoc = await getDoc(memberRef);
+  const memberData = memberDoc.data();
+  const update = { ...userDefaults, ...memberData };
+  await setDoc(memberRef, update, { merge: true });
 }
 
 watchMember = (id, onChange) => {

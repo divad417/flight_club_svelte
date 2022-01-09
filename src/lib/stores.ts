@@ -1,9 +1,10 @@
 import type { Member } from "$lib/models";
-import { watchMember } from "$lib/firebase";
 import type { Unsubscribe } from "@firebase/util";
+import { watchMember } from "$lib/firebase";
+import { userDefaults } from "$lib/models";
 
 const userStore = (initialValue = null) => {
-    let value = initialValue;
+    let value: Member = initialValue;
     let subs = [];
     let subscribedToUser = false;
     let unsubscribe: Unsubscribe;
@@ -22,10 +23,14 @@ const userStore = (initialValue = null) => {
         value = newValue;
         if (!subscribedToUser && value.id) {
             unsubscribe = watchMember(value.id, (user) => {
-                value = user;
+                if (!user) {
+                    set(null);
+                } else {
+                    set({ ...userDefaults, ...user });
+                }
             });
             subscribedToUser = true;
-        } else if (subscribedToUser && !! value) {
+        } else if (subscribedToUser && !value) {
             unsubscribe();
             subscribedToUser = false;
         }
@@ -37,7 +42,7 @@ const userStore = (initialValue = null) => {
     return {
         subscribe,
         set,
-        update
+        update,
     }
 }
 

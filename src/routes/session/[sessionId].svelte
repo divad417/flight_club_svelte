@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
+  import { user } from '$lib/stores';
   import type { Beer } from '$lib/models';
   import type { Unsubscribe } from '@firebase/util';
   import SessionInfo from '$lib/SessionInfo.svelte';
@@ -26,7 +27,7 @@
 
     // Get the session data and watch for changes
     unsubscribe = watchSession(id, onUpdate);
-    
+
     onDelete = () => {
       if (confirm(`Delete session ${session.number}?`)) {
         deleteSession(session.id);
@@ -39,7 +40,9 @@
   // Link things to allow clicking beers to edit them
   let openBeerEditor: (data: Beer) => void;
   function beerClick(event: CustomEvent) {
-    openBeerEditor(event.detail);
+    if ($user.roles.editor) {
+      openBeerEditor(event.detail);
+    }
   }
 </script>
 
@@ -52,8 +55,10 @@
 <h3>Recap</h3>
 <Recap bind:session />
 <h3>Beers</h3>
-<UpdateBeer bind:openBeerEditor session={session.number} />
-<span class="text-muted">(edit by selecting below)</span>
+{#if $user.roles.editor}
+  <UpdateBeer bind:openBeerEditor session={session.number} />
+  <span class="text-muted">(edit by selecting below)</span>
+{/if}
 <BeerList
   filterKey="session"
   sortKey="order"
@@ -65,8 +70,10 @@
 <h3>Photos</h3>
 <Photos {session} />
 <hr />
-<UpdateSession {session} />
-<button class="btn btn-light mx-2" on:click={onDelete}>Delete Session</button>
-<hr />
+{#if $user.roles.editor}
+  <UpdateSession {session} />
+  <button class="btn btn-light mx-2" on:click={onDelete}>Delete Session</button>
+  <hr />
+{/if}
 <h3>User Notes</h3>
 <UserNotes sessionId={id} />

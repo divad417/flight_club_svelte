@@ -30,8 +30,8 @@
 
 <h1>{member.name}</h1>
 <MemberInfo {member} />
-{#if id == $user.id}
-  <UpdateProfile />
+{#if id == $user.id || $user.roles.admin}
+  <UpdateProfile bind:member />
 {/if}
 <h1>Beers</h1>
 <BeerList filterKey="user" filterValue={member.name} searchable={false} />

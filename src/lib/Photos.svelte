@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { Session } from '$lib/models';
+  import { user } from '$lib/stores';
   export let session: Session;
   let files: FileList;
 
@@ -10,7 +11,7 @@
   onMount(async () => {
     // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
     const { uploadPhotos, deletePhotos } = await import('$lib/firebase');
-    
+
     choosePhotos = () => {
       uploadPhotos(session.id, files);
     };
@@ -29,10 +30,12 @@
     {/each}
   {/if}
 </div>
-<input id="add-photo" type="file" multiple hidden bind:files on:change={choosePhotos} />
-<label for="add-photo" class="btn btn-light mx-2">Add Photos</label>
-{#if session.photos != undefined && session.photos.length}
-  <button class="btn btn-light mx-2" on:click={onDelete}>Delete Photos</button>
+{#if $user.roles.editor}
+  <input id="add-photo" type="file" multiple hidden bind:files on:change={choosePhotos} />
+  <label for="add-photo" class="btn btn-light mx-2">Add Photos</label>
+  {#if session.photos != undefined && session.photos.length}
+    <button class="btn btn-light mx-2" on:click={onDelete}>Delete Photos</button>
+  {/if}
 {/if}
 
 <style>

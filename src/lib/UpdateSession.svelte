@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
+  import { user } from '$lib/stores';
   import type { Session } from '$lib/models';
 
   let onSubmit: () => void;
@@ -15,7 +16,7 @@
       console.log(session.id);
       await updateSession(session);
       goto(`/session/${session.id}`);
-    }
+    };
   });
 
   export let session: Session = {
@@ -28,14 +29,16 @@
   $: submitDisabled = session.number == null;
 </script>
 
-<button
-  type="button"
-  class="btn btn-light mx-2"
-  data-bs-toggle="modal"
-  data-bs-target="#updateSession"
->
-  {session.id ? 'Edit' : 'Add'} Session
-</button>
+{#if $user.roles.editor}
+  <button
+    type="button"
+    class="btn btn-light mx-2"
+    data-bs-toggle="modal"
+    data-bs-target="#updateSession"
+  >
+    {session.id ? 'Edit' : 'Add'} Session
+  </button>
+{/if}
 
 <div class="modal" tabindex="-1" id="updateSession">
   <div class="modal-dialog modal-dialog-centered">
