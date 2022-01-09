@@ -1,37 +1,37 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import type { user } from '$lib/models';
+  import type { Member } from '$lib/models';
   import type { Unsubscribe } from '@firebase/util';
+  import { user } from '$lib/stores';
 
   let navbarElement: Element;
   let navbarCollapse: any;
 
-  export let user: user = null;
-  let login: () => void;
-  let logout: () => void;
-  const onUpdate = (updatedUser: user) => {
-    user = updatedUser;
+  let onLogin: () => void;
+  let onLogout: () => void;
+  const onUpdate = (updatedUser: Member) => {
+    $user = updatedUser;
   };
-  let unsubscribe: Unsubscribe;
+  let unsubscribeAuthState: Unsubscribe;
 
   onMount(async () => {
     // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
     const Collapse = (await import('bootstrap/js/dist/collapse.js')).default;
-    const firebase = await import('$lib/firebase');
+    const { currentUser, login, logout, watchAuthState } = await import('$lib/firebase');
     await import('bootstrap/js/dist/dropdown.js');
     await import('bootstrap/js/dist/button.js');
 
     // Need this object accessible to open the modal box programatically
     navbarCollapse = new Collapse(navbarElement, { toggle: false });
 
-    user = firebase.currentUser();
-    login = firebase.login;
-    logout = firebase.logout;
+    $user = currentUser();
+    onLogin = login;
+    onLogout = logout;
 
     // Watch for login/logout events from the auth library
-    unsubscribe = firebase.watchAuthState(onUpdate);
+    unsubscribeAuthState = watchAuthState(onUpdate);
   });
-  onDestroy(() => unsubscribe());
+  onDestroy(() => unsubscribeAuthState());
 
   function closeNavbar() {
     // Bootstrap navbars don't auto-close, so added that feature
@@ -70,7 +70,7 @@
     </ul>
     <hr class="dropdown-divider" />
     <ul class="navbar-nav ms-auto">
-      {#if user}
+      {#if $user}
         <li class="nav-item dropdown">
           <a
             class="nav-link px-2"
@@ -80,23 +80,23 @@
             aria-expanded="false"
             on:click|stopPropagation
           >
-            {user.full_name}
+            {$user.full_name}
             <img
               class="rounded-circle align-middle ms-1"
               width="30"
-              src={user.photoURL}
+              src={$user.photoURL}
               alt="Profile"
             />
           </a>
           <div class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-            <a class="dropdown-item" href={'/member/' + user.id}>Profile</a>
+            <a class="dropdown-item" href={'/member/' + $user.id}>Profile</a>
             <hr class="dropdown-divider" />
-            <a href={'#'} class="dropdown-item" on:click={logout}>Sign Out</a>
+            <a href={'#'} class="dropdown-item" on:click={onLogout}>Sign Out</a>
           </div>
         </li>
       {:else}
         <li class="nav-item">
-          <button class="btn btn-light" on:click={login}>Sign in with Google</button>
+          <button class="btn btn-light" on:click={onLogin}>Sign in with Google</button>
         </li>
       {/if}
     </ul>

@@ -1,15 +1,13 @@
 <script lang="ts">
-  import type { user } from '$lib/models';
+  import { user } from '$lib/stores';
   import Navbar from '$lib/Navbar.svelte';
   import Footer from '$lib/Footer.svelte';
   import Login from '$lib/Login.svelte';
-
-  let user: user = null;
 </script>
 
-<Navbar bind:user />
+<Navbar />
 <!-- Require login to view pages -->
-{#if user }
+{#if $user }
   <slot />
 {:else}
   <Login />

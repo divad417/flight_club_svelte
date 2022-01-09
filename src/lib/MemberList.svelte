@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { user, userView, usersToCsv } from '$lib/models';
+  import { Member, memberView, membersToCsv } from '$lib/models';
   import type { Unsubscribe } from '@firebase/util';
 
   // Component props
@@ -9,7 +9,7 @@
   export let ascending: boolean = true;
 
   let members: any[] = [];
-  let memberList: user[] = [];
+  let memberList: Member[] = [];
   const onUpdate = (update: any[]) => {
     members = update;
   };
@@ -17,14 +17,14 @@
 
   onMount(async () => {
     // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
-    const firebase = await import('$lib/firebase');
+    const { watchMembers } = await import('$lib/firebase');
     
-    // Get users from the database and watch for changes
-    unsubscribe = firebase.watchUsers(onUpdate);
+    // Get members from the database and watch for changes
+    unsubscribe = watchMembers(onUpdate);
   });
   onDestroy(() => unsubscribe());
 
-  // Handle user inputs to re-sort, triggers the reactive block below
+  // Handle member inputs to re-sort, triggers the reactive block below
   function onClickColumn(key: string) {
     if (key == sortKey) {
       ascending = !ascending;
@@ -35,7 +35,7 @@
 
   // Reactive block which re-runs when the sort type changes
   $: {
-    function compare(a: user, b: user) {
+    function compare(a: Member, b: Member) {
       if (a[sortKey] > b[sortKey]) {
         return ascending ? 1 : -1;
       } else if (a[sortKey] < b[sortKey]) {
@@ -47,9 +47,9 @@
     memberList = members.sort(compare);
   }
 
-  function onClickMember(user: user) {
+  function onClickMember(member: Member) {
     // Goto a specific member page
-    goto(`/member/${user.id}`);
+    goto(`/member/${member.id}`);
   }
 </script>
 
@@ -57,7 +57,7 @@
   <table class="table table-striped table-hover">
     <thead>
       <tr>
-        {#each userView as field}
+        {#each memberView as field}
           <th width={field.width} on:click={() => onClickColumn(field.key)}>
             {field.text}
             {#if field.key == sortKey}
@@ -76,7 +76,7 @@
     <tbody>
       {#each memberList as member}
         <tr>
-          {#each userView as field}
+          {#each memberView as field}
             <td on:click={() => onClickMember(member)}>{field.show(member)}</td>
           {/each}
         </tr>
@@ -84,7 +84,7 @@
     </tbody>
   </table>
 </div>
-<button type="button" class="btn btn-light mx-2" on:click={() => usersToCsv(members)}
+<button type="button" class="btn btn-light mx-2" on:click={() => membersToCsv(members)}
   >Download as CSV</button
 >
 

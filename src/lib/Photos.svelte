@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { session } from '$lib/models';
-  export let session: session;
+  import type { Session } from '$lib/models';
+  export let session: Session;
   let files: FileList;
 
   let choosePhotos: () => void;
@@ -9,14 +9,14 @@
 
   onMount(async () => {
     // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
-    const firebase = await import('$lib/firebase');
+    const { uploadPhotos, deletePhotos } = await import('$lib/firebase');
     
     choosePhotos = () => {
-      firebase.uploadPhotos(session.id, files);
+      uploadPhotos(session.id, files);
     };
     onDelete = () => {
       if (confirm('Delete all session photos?')) {
-        firebase.deletePhotos(session.id);
+        deletePhotos(session.id);
       }
     };
   });

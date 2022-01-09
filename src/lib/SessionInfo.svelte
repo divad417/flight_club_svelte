@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { session } from '$lib/models';
-  export let session: session;
+  import type { Session } from '$lib/models';
+  export let session: Session;
 </script>
 
 <div class="row mx-2" style="max-width: 600px">

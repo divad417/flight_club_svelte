@@ -1,26 +1,34 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { beer } from '$lib/models';
+  import type { Beer } from '$lib/models';
 
   // Get the bootstrap Modal HTML element to open programatically
   let updateBeerElement: Element = undefined;
   let updateBeerModal: any = undefined;
-  let newBeerId: () => string;
-  let updateBeer: (beer: beer) => void;
-  let deleteBeer: (id: string) => void;
+  let onSubmit: () => void;
+  let onDelete: () => void;
 
   onMount(async () => {
     // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
     const Modal = (await import('bootstrap/js/dist/modal.js')).default;
     updateBeerModal = new Modal(updateBeerElement);
 
-    const firebase = await import('$lib/firebase');
-    newBeerId = firebase.newBeerId;
-    updateBeer = firebase.updateBeer;
-    deleteBeer = firebase.deleteBeer;
+    const { newBeerId, updateBeer, deleteBeer } = await import('$lib/firebase');
+    onSubmit = () => {
+      if (addingNewBeer) {
+        editBeer.id = newBeerId();
+        addingNewBeer = false;
+      }
+      updateBeer(editBeer);
+    };
+    onDelete = () => {
+      if (confirm('Delete this beer?')) {
+        deleteBeer(editBeer.id);
+      }
+    };
   });
 
-  let newBeer: beer = {
+  let newBeer: Beer = {
     id: '',
     session: null,
     name: '',
@@ -40,7 +48,7 @@
   $: newBeer.session = session;
 
   let addingNewBeer = false;
-  export function openBeerEditor(data: beer, newBeer: boolean = false) {
+  export function openBeerEditor(data: Beer, newBeer: boolean = false) {
     addingNewBeer = newBeer;
     editBeer = { ...data };
     updateBeerModal.show();
@@ -48,20 +56,6 @@
 
   // Require a session number to create a beer
   $: submitDisabled = editBeer.session ? false : true;
-
-  function onSubmit() {
-    if (addingNewBeer) {
-      editBeer.id = newBeerId();
-      addingNewBeer = false;
-    }
-    updateBeer(editBeer);
-  }
-
-  function onDelete() {
-    if (confirm('Delete this beer?')) {
-      deleteBeer(editBeer.id);
-    }
-  }
 </script>
 
 <button type="button" class="btn btn-light mx-2" on:click={() => openBeerEditor(newBeer, true)}>

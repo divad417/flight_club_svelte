@@ -1,22 +1,19 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { user } from '$lib/models';
+  import { user } from '$lib/stores';
 
-  let updateUser: (user: user) => void;
+  let onSubmit: () => void;
 
   onMount(async () => {
     // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
     await import('bootstrap/js/dist/modal.js');
-    const firebase = await import('$lib/firebase');
-    updateUser = firebase.updateUser;
+    const { updateMember } = await import('$lib/firebase');
+    onSubmit = () => {
+      updateMember($user);
+    }
   });
 
-  export let user: user;
-  $: submitDisabled = !user.name;
-
-  function onSubmit() {
-    updateUser(user);
-  }
+  $: submitDisabled = !$user.name;
 </script>
 
 <button
@@ -40,7 +37,7 @@
           <div class="row mb-3 align-items-center">
             <label for="name" class="col-sm-3 col-form-label"> Name </label>
             <div class="col-sm-9">
-              <input id="name" bind:value={user.name} class="form-control" type="string" />
+              <input id="name" bind:value={$user.name} class="form-control" type="string" />
             </div>
             <div class="form-text text-end">This links you with beers</div>
           </div>

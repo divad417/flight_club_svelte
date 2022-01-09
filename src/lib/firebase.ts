@@ -1,27 +1,27 @@
-import type { beer, session, user } from '$lib/models';
+import type { Beer, Session, Member } from '$lib/models';
 import type { Unsubscribe } from '@firebase/util';
 
-export let currentUser: () => user | null;
+export let currentUser: () => Member | null;
 export let login: () => void;
 export let logout: () => void;
-export let watchAuthState: (onChange: (user: user) => void) => Unsubscribe;
+export let watchAuthState: (onChange: (member: Member) => void) => Unsubscribe;
 
 export let newSessionId: () => string;
 export let getSessionId: (id: number) => Promise<string>;
-export let updateSession: (session: session) => Promise<void>;
+export let updateSession: (session: Session) => Promise<void>;
 export let deleteSession: (id: string) => Promise<void>;
 export let watchSession: (id: string, onChange: (session: any) => void) => Unsubscribe;
 export let watchSessions: (onChange: (sessions: any[]) => void) => Unsubscribe;
 
 export let newBeerId: () => string;
-export let updateBeer: (beer: beer) => Promise<void>;
+export let updateBeer: (beer: Beer) => Promise<void>;
 export let deleteBeer: (id: string) => Promise<void>;
 export let watchBeers: (onChange: (beers: any[]) => void) => Unsubscribe;
 
-export let getUserId: (name: string) => Promise<string>;
-export let updateUser: (user: user) => Promise<void>;
-export let watchUser: (id: string, onChange: (user: any) => void) => Unsubscribe;
-export let watchUsers: (onChange: (users: any[]) => void) => Unsubscribe;
+export let getMemberId: (member: string) => Promise<string>;
+export let updateMember: (member: Member) => Promise<void>;
+export let watchMember: (id: string, onChange: (member: any) => void) => Unsubscribe;
+export let watchMembers: (onChange: (members: any[]) => void) => Unsubscribe;
 
 export let uploadPhotos: (sessionId: string, files: FileList) => Promise<void>;
 export let deletePhotos: (sessionId: string) => Promise<void>;
@@ -36,12 +36,13 @@ const firebaseConfig = {
 };
 
 // Convert the Google user format to our database format
-const userFromGoogleUser = (googleUser: any): user => {
+const userFromGoogleUser = (googleUser: any): Member => {
   return {
     id: googleUser.uid,
     full_name: googleUser.displayName,
     email: googleUser.email,
-    photoURL: googleUser.photoURL
+    photoURL: googleUser.photoURL,
+    notes: []
   };
 }
 
@@ -96,7 +97,7 @@ watchAuthState = (onChange) => {
       // Add or update the user to our database on login
       const user = userFromGoogleUser(googleUser);
       onChange(user);
-      updateUser(user);
+      updateMember(user);
     } else {
       onChange(null);
     }
@@ -173,36 +174,36 @@ watchBeers = (onChange) => {
   });
 }
 
-// User functions
+// Member functions
 
-getUserId = async (name) => {
-  const userQuery = query(collection(db, 'users'), where('name', '==', name));
-  const queryResults = await getDocs(userQuery);
+getMemberId = async (name) => {
+  const memberQuery = query(collection(db, 'users'), where('name', '==', name));
+  const queryResults = await getDocs(memberQuery);
   if (queryResults.empty) {
     throw new Error(`Member ${name} does not exist!`);
   }
   return queryResults.docs[0].ref.id;
 }
 
-updateUser = async (user) => {
-  const userRef = doc(db, 'users', user.id);
-  await setDoc(userRef, user, { merge: true });
+updateMember = async (member) => {
+  const memberRef = doc(db, 'users', member.id);
+  await setDoc(memberRef, member, { merge: true });
 }
 
-watchUser = (id, onChange) => {
+watchMember = (id, onChange) => {
   return onSnapshot(doc(db, 'users', id), (snapshot) => {
-    const user = snapshot.data();
-    user.id = snapshot.id;
-    onChange(user);
+    const member = snapshot.data();
+    member.id = snapshot.id;
+    onChange(member);
   });
 }
 
-watchUsers = (onChange) => {
+watchMembers = (onChange) => {
   return onSnapshot(collection(db, 'users'), (snapshot) => {
-    const users = snapshot.docs.map((doc) => {
+    const members = snapshot.docs.map((doc) => {
       return { ...doc.data(), id: doc.id };
     });
-    onChange(users);
+    onChange(members);
   });
 }
 

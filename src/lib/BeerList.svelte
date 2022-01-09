@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
-  import { beer, beerView, beersToCsv } from '$lib/models';
+  import { Beer, beerView, beersToCsv } from '$lib/models';
   import type { Unsubscribe } from '@firebase/util';
 
   const dispatch = createEventDispatcher();
@@ -15,25 +15,40 @@
   export let ascending: boolean = true;
 
   let beers: any[] = [];
-  let beerList: beer[] = [];
+  let beerList: Beer[] = [];
   let searchTerm: string = '';
-  let getSessionId: (session: number) => Promise<string>;
-  let getUserId: (user: string) => Promise<string>;
   const onUpdate = (update: any[]) => {
     beers = update;
   };
   let unsubscribe: Unsubscribe;
-
+  let onClickBeer: (beer: Beer, key: string) => void;
 
   onMount(async () => {
     // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
-    const firebase = await import('$lib/firebase');
-
-    getSessionId = firebase.getSessionId;
-    getUserId = firebase.getUserId;
+    const { getSessionId, getMemberId, watchBeers } = await import('$lib/firebase');
 
     // Get beers from the database and watch for updates
-    unsubscribe = firebase.watchBeers(onUpdate);
+    unsubscribe = watchBeers(onUpdate);
+
+    onClickBeer = async (beer, key) => {
+      // A bit hacky but change click behavior for displaying beers on different pages
+      if (editable) {
+        // Dispatch click events to parent to handle more complex actions (ie. editing)
+        dispatch('beerClick', beer);
+      } else if (key == 'Session') {
+        // Goto a specific session page
+        const id = await getSessionId(beer.session);
+        goto(`/session/${id}`);
+      } else if (key == 'Member') {
+        try {
+          // Goto a specific member page
+          const id = await getMemberId(beer.user);
+          goto(`/member/${id}`);
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+    };
   });
   onDestroy(() => unsubscribe());
 
@@ -53,7 +68,7 @@
     const searchTermLower = searchTerm.toLowerCase();
 
     // Update the search function
-    function search(beer: beer): boolean {
+    function search(beer: Beer): boolean {
       if (filterKey && beer[filterKey] != filterValue) {
         // Exclude beers by filter keys for session or member page
         return false;
@@ -72,7 +87,7 @@
     }
 
     // Update the sorting function
-    function compare(a: beer, b: beer) {
+    function compare(a: Beer, b: Beer) {
       if (a[sortKey] > b[sortKey]) {
         return ascending ? 1 : -1;
       } else if (a[sortKey] < b[sortKey]) {
@@ -84,26 +99,6 @@
 
     // Filter and sort the list for rendering
     beerList = beers.filter(search).sort(compare);
-  }
-
-  async function onClickBeer(beer: beer, key: string) {
-    // A bit hacky but change click behavior for displaying beers on different pages
-    if (editable) {
-      // Dispatch click events to parent to handle more complex actions (ie. editing)
-      dispatch('beerClick', beer);
-    } else if (key == 'Session') {
-      // Goto a specific session page
-      const id = await getSessionId(beer.session);
-      goto(`/session/${id}`);
-    } else if (key == 'Member') {
-      try {
-        // Goto a specific member page
-        const id = await getUserId(beer.user);
-        goto(`/member/${id}`);
-      } catch (error) {
-        console.log(error.message);
-      }
-    }
   }
 </script>
 

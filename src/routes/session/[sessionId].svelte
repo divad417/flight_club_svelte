@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import type { beer } from '$lib/models';
+  import type { Beer } from '$lib/models';
   import type { Unsubscribe } from '@firebase/util';
   import SessionInfo from '$lib/SessionInfo.svelte';
   import Recap from '$lib/Recap.svelte';
@@ -22,14 +22,14 @@
   let unsubscribe: Unsubscribe;
 
   onMount(async () => {
-    const firebase = await import('$lib/firebase');
+    const { watchSession, deleteSession } = await import('$lib/firebase');
 
     // Get the session data and watch for changes
-    unsubscribe = firebase.watchSession(id, onUpdate);
+    unsubscribe = watchSession(id, onUpdate);
     
     onDelete = () => {
       if (confirm(`Delete session ${session.number}?`)) {
-        firebase.deleteSession(session.id);
+        deleteSession(session.id);
         goto('/sessions');
       }
     };
@@ -37,7 +37,7 @@
   onDestroy(() => unsubscribe());
 
   // Link things to allow clicking beers to edit them
-  let openBeerEditor: (data: beer) => void;
+  let openBeerEditor: (data: Beer) => void;
   function beerClick(event: CustomEvent) {
     openBeerEditor(event.detail);
   }

@@ -1,5 +1,5 @@
 // Session type matching the firebase document fields
-export interface session {
+export interface Session {
   id?: string;
   number: number;
   date: string;
@@ -14,7 +14,7 @@ export interface session {
 }
 
 // Beer type matching the firebase document fields
-export interface beer {
+export interface Beer {
   id?: string;
   session: number;
   name: string;
@@ -28,8 +28,8 @@ export interface beer {
   user: string;
 }
 
-// User type matching the firebase document fields
-export interface user {
+// Member type matching the firebase document fields
+export interface Member {
   id: string;
   name?: string;
   full_name: string;
@@ -45,55 +45,55 @@ export interface user {
 
 // Information on how to display sessions in a table
 export const sessionView = [
-  { key: 'number', text: 'Session', width: 100, show: (session: session) => session.number },
-  { key: 'date', text: 'Date', width: 100, show: (session: session) => session.date },
-  { key: 'winner', text: 'Winner', width: 120, show: (session: session) => session.winner ?? '' },
-  { key: 'location', text: 'Location', width: 120, show: (session: session) => session.location ?? '' },
-  { key: 'beer', text: 'Winning Beer', width: 180, show: (session: session) => session.beer ?? '' },
-  { key: 'brewery', text: 'Brewery', width: 180, show: (session: session) => session.brewery ?? '' },
-  { key: 'count', text: 'Entries', width: 100, show: (session: session) => session.count ?? '' },
-  { key: 'avg_abv', text: 'Avg ABV', width: 120, show: (session: session) => (session.avg_abv ? session.avg_abv.toFixed(1) : '') }
+  { key: 'number', text: 'Session', width: 100, show: (session: Session) => session.number },
+  { key: 'date', text: 'Date', width: 100, show: (session: Session) => session.date },
+  { key: 'winner', text: 'Winner', width: 120, show: (session: Session) => session.winner ?? '' },
+  { key: 'location', text: 'Location', width: 120, show: (session: Session) => session.location ?? '' },
+  { key: 'beer', text: 'Winning Beer', width: 180, show: (session: Session) => session.beer ?? '' },
+  { key: 'brewery', text: 'Brewery', width: 180, show: (session: Session) => session.brewery ?? '' },
+  { key: 'count', text: 'Entries', width: 100, show: (session: Session) => session.count ?? '' },
+  { key: 'avg_abv', text: 'Avg ABV', width: 120, show: (session: Session) => (session.avg_abv ? session.avg_abv.toFixed(1) : '') }
 ];
 
 // Information on how to display beers in a table
 export const beerView = [
-  { key: 'session', text: 'Session', width: 100, show: (beer: beer) => beer.session },
-  { key: 'name', text: 'Name', width: 180, show: (beer: beer) => beer.name ?? '' },
-  { key: 'brewery', text: 'Brewery', width: 180, show: (beer: beer) => beer.brewery ?? '' },
-  { key: 'type', text: 'Style', width: 180, show: (beer: beer) => beer.type ?? '' },
-  { key: 'abv', text: 'ABV', width: 100, show: (beer: beer) => (beer.abv ? beer.abv : '') },
-  { key: 'score', text: 'Votes', width: 100, show: (beer: beer) => beer.score },
-  { key: 'win', text: 'Result', width: 100, show: (beer: beer) => (beer.win ? 'Win' : '') },
-  { key: 'user', text: 'Member', width: 120, show: (beer: beer) => beer.user ?? '' }
+  { key: 'session', text: 'Session', width: 100, show: (beer: Beer) => beer.session },
+  { key: 'name', text: 'Name', width: 180, show: (beer: Beer) => beer.name ?? '' },
+  { key: 'brewery', text: 'Brewery', width: 180, show: (beer: Beer) => beer.brewery ?? '' },
+  { key: 'type', text: 'Style', width: 180, show: (beer: Beer) => beer.type ?? '' },
+  { key: 'abv', text: 'ABV', width: 100, show: (beer: Beer) => (beer.abv ? beer.abv : '') },
+  { key: 'score', text: 'Votes', width: 100, show: (beer: Beer) => beer.score },
+  { key: 'win', text: 'Result', width: 100, show: (beer: Beer) => (beer.win ? 'Win' : '') },
+  { key: 'user', text: 'Member', width: 120, show: (beer: Beer) => beer.user ?? '' }
 ];
 
-// Information on how to display users in a table
-export const userView = [
-  { key: 'name', text: 'Member', width: 120, show: (user: user) => user.name ?? '' },
-  { key: 'wins', text: 'Wins', width: 100, show: (user: user) => user.wins ?? '' },
-  { key: 'count', text: 'Beers', width: 100, show: (user: user) => user.count ?? '' },
-  { key: 'avg_abv', text: 'Avg ABV', width: 120, show: (user: user) => (user.avg_abv ? user.avg_abv.toFixed(1) : '') },
-  { key: 'avg_score', text: 'Avg Score', width: 120, show: (user: user) => (user.avg_score ? user.avg_score.toFixed(1) : '') },
-  { key: 'win_rate', text: 'Win Rate', width: 120, show: (user: user) => (user.win_rate ? user.win_rate.toFixed(3) : '') },
-  { key: 'full_name', text: 'Google Name', width: 180, show: (user: user) => user.full_name },
-  { key: 'email', text: 'Email', width: 180, show: (user: user) => user.email }
+// Information on how to display members in a table
+export const memberView = [
+  { key: 'name', text: 'Member', width: 120, show: (member: Member) => member.name ?? '' },
+  { key: 'wins', text: 'Wins', width: 100, show: (member: Member) => member.wins ?? '' },
+  { key: 'count', text: 'Beers', width: 100, show: (member: Member) => member.count ?? '' },
+  { key: 'avg_abv', text: 'Avg ABV', width: 120, show: (member: Member) => (member.avg_abv ? member.avg_abv.toFixed(1) : '') },
+  { key: 'avg_score', text: 'Avg Score', width: 120, show: (member: Member) => (member.avg_score ? member.avg_score.toFixed(1) : '') },
+  { key: 'win_rate', text: 'Win Rate', width: 120, show: (member: Member) => (member.win_rate ? member.win_rate.toFixed(3) : '') },
+  { key: 'full_name', text: 'Google Name', width: 180, show: (member: Member) => member.full_name },
+  { key: 'email', text: 'Email', width: 180, show: (member: Member) => member.email }
 ];
 
-export function sessionsToCsv(sessions: session[]) {
+export function sessionsToCsv(sessions: Session[]) {
   const keys = sessionView.map(item => item.key);
   downloadCsv('sessions.csv', keys, sessions);
 }
 
-export function beersToCsv(beers: beer[]) {
+export function beersToCsv(beers: Beer[]) {
   const keys = beerView.map(item => item.key);
   // These keys are in the data type but displayed, so need to add manually
   keys.push('order', 'style');
   downloadCsv('beers.csv', keys, beers);
 }
 
-export function usersToCsv(users: user[]) {
-  const keys = userView.map(item => item.key);
-  downloadCsv('users.csv', keys, users);
+export function membersToCsv(members: Member[]) {
+  const keys = memberView.map(item => item.key);
+  downloadCsv('members.csv', keys, members);
 }
 
 function downloadCsv(filename: string, keys: Array<string>, data: Array<object>) {

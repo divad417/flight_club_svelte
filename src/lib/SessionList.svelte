@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { session, sessionView, sessionsToCsv } from '$lib/models';
+  import { Session, sessionView, sessionsToCsv } from '$lib/models';
   import type { Unsubscribe } from '@firebase/util';
 
   // Component props
@@ -9,7 +9,7 @@
   export let ascending: boolean = false;
 
   let sessions: any[] = []; // All sessions
-  let sessionList: session[] = []; // Sorted list to display
+  let sessionList: Session[] = []; // Sorted list to display
 
   const onChange = (update: any[]) => {
     sessions = update;
@@ -18,10 +18,10 @@
 
   onMount(async () => {
     // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
-    const firebase = await import('$lib/firebase');
+    const { watchSessions } = await import('$lib/firebase');
 
     // Get sessions from the database and watch for changes
-    unsubscribe = firebase.watchSessions(onChange);
+    unsubscribe = watchSessions(onChange);
   });
   onDestroy(() => unsubscribe());
 
@@ -36,7 +36,7 @@
 
   // Reactive block which re-runs when the sort type changes
   $: {
-    function compare(a: session, b: session) {
+    function compare(a: Session, b: Session) {
       if (a[sortKey] > b[sortKey]) {
         return ascending ? 1 : -1;
       } else if (a[sortKey] < b[sortKey]) {
@@ -48,7 +48,7 @@
     sessionList = sessions.sort(compare);
   }
 
-  function onClickSession(session: session) {
+  function onClickSession(session: Session) {
     // Go to a specific session page
     goto(`/session/${session.id}`);
   }
