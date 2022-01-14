@@ -1,35 +1,35 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { Member } from '$lib/models';
-  import { updateMember } from '$lib/firebase';
-
-  export let member: Member;
+  import { updateClub } from '$lib/firebase';
+  import { activeClub } from '$lib/stores';
 
   onMount(async () => {
     await import('bootstrap/js/dist/modal.js');
   })
 
+  $: club = $activeClub;
+
   function onSubmit() {
-    updateMember(member);
+    updateClub(club);
   }
 
-  $: submitDisabled = !member.name;
+  $: submitDisabled = !club.name;
 </script>
 
 <button
   type="button"
   class="btn btn-light mx-3"
   data-bs-toggle="modal"
-  data-bs-target="#updateUser"
+  data-bs-target="#updateClub"
 >
-  Edit Profile
+  Edit Club
 </button>
 
-<div class="modal" tabindex="-1" id="updateUser">
+<div class="modal" tabindex="-1" id="updateClub">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title m-0">Edit Profile</h3>
+        <h3 class="modal-title m-0">Edit Club</h3>
         <button type="button" class="btn-close" data-bs-dismiss="modal" />
       </div>
       <div class="modal-body">
@@ -37,9 +37,8 @@
           <div class="row mb-3 align-items-center">
             <label for="name" class="col-sm-3 col-form-label"> Name </label>
             <div class="col-sm-9">
-              <input id="name" bind:value={member.name} class="form-control" type="string" />
+              <input id="name" bind:value={club.name} class="form-control" type="string" />
             </div>
-            <div class="form-text text-end">This links you with beers</div>
           </div>
         </form>
       </div>

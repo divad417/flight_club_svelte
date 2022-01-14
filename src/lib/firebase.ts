@@ -1,28 +1,35 @@
-import type { Beer, Session, Member } from '$lib/models';
+import type { Beer, Session, Member, Club } from '$lib/models';
 import type { Unsubscribe } from '@firebase/util';
 import { userDefaults } from '$lib/models';
 
 export let login: () => void;
 export let logout: () => void;
-export let watchAuthState: (onChange: (member: Member) => void) => Unsubscribe;
+export let watchAuthState: (setUser: (member: Member) => void) => Unsubscribe;
 
 export let newSessionId: () => string;
-export let getSessionId: (id: number) => Promise<string>;
+export let getSessionId: (club: string, id: number) => Promise<string>;
 export let updateSession: (session: Session) => Promise<void>;
 export let deleteSession: (id: string) => Promise<void>;
 export let watchSession: (id: string, onChange: (session: any) => void) => Unsubscribe;
-export let watchSessions: (onChange: (sessions: any[]) => void) => Unsubscribe;
+export let watchSessions: (club: string, onChange: (sessions: any[]) => void) => Unsubscribe;
 
 export let newBeerId: () => string;
 export let updateBeer: (beer: Beer) => Promise<void>;
 export let deleteBeer: (id: string) => Promise<void>;
-export let watchBeers: (onChange: (beers: any[]) => void) => Unsubscribe;
+export let watchBeers: (club: string, onChange: (beers: any[]) => void) => Unsubscribe;
 
 export let getMemberId: (member: string) => Promise<string>;
 export let updateMember: (member: Member) => Promise<void>;
 let updateMemberDefaults: (memberId: string) => Promise<void>;
 export let watchMember: (id: string, onChange: (member: any) => void) => Unsubscribe;
-export let watchMembers: (onChange: (members: any[]) => void) => Unsubscribe;
+export let watchMembers: (club: Club, onChange: (members: any[]) => void) => Unsubscribe;
+
+export let joinClub: (user: string, club: Club) => Promise<void>;
+export let leaveClub: (user: string, club: Club) => Promise<void>;
+export let updateClub: (club: Club) => Promise<void>;
+export let watchClub: (id: string, onChange: (club: any) => void) => Unsubscribe;
+export let watchClubs: (ids: string[], onChange: (clubs: any[]) => void) => Unsubscribe;
+export let watchAllClubs: (onChange: (clubs: any[]) => void) => Unsubscribe;
 
 export let uploadPhotos: (sessionId: string, files: FileList) => Promise<void>;
 export let deletePhotos: (sessionId: string) => Promise<void>;
@@ -53,7 +60,9 @@ import {
   deleteDoc,
   updateDoc,
   arrayUnion,
-  onSnapshot
+  arrayRemove,
+  onSnapshot,
+  documentId
 } from '@firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, list, deleteObject } from '@firebase/storage';
 
@@ -91,16 +100,16 @@ const userFromGoogleUser = (googleUser: any): any => {
   };
 }
 
-watchAuthState = (onChange) => {
-  return auth.onAuthStateChanged((googleUser) => {
+watchAuthState = (setUser) => {
+  return auth.onAuthStateChanged(async (googleUser) => {
     if (googleUser) {
       // Add or update the user to our database on login
       const user = userFromGoogleUser(googleUser);
-      onChange(user); // Populates the ID in the user store, allowing it to subscribe to the firestore user
-      updateMember(user); // Updates the firestore user with any changes from the google user, creating a new user if necessary
-      updateMemberDefaults(user.id); // Populate any defaults for new users or model updates
+      setUser(user); // Populates the ID in the user store, allowing it to subscribe to the firestore user
+      await updateMember(user); // Updates the firestore user with any changes from the google user, creating a new user if necessary
+      updateMemberDefaults(user.id); // Populate any defaults for new users or model updates to firebase
     } else {
-      onChange(null);
+      setUser(null);
     }
   });
 }
@@ -112,8 +121,8 @@ newSessionId = () => {
   return sessionRef.id;
 }
 
-getSessionId = async (number) => {
-  const sessionQuery = query(collection(db, 'sessions'), where('number', '==', number));
+getSessionId = async (club, number) => {
+  const sessionQuery = query(collection(db, 'sessions'), where('number', '==', number), where('club', '==', club));
   const queryResults = await getDocs(sessionQuery);
   if (queryResults.empty) {
     throw new Error(`Session ${number} does not exist!`);
@@ -140,8 +149,9 @@ watchSession = (id, onChange) => {
   });
 }
 
-watchSessions = (onChange) => {
-  return onSnapshot(collection(db, 'sessions'), (snapshot) => {
+watchSessions = (club, onChange) => {
+  const sessionsQuery = query(collection(db, 'sessions'), where('club', '==', club));
+  return onSnapshot(sessionsQuery, (snapshot) => {
     const sessions = snapshot.docs.map((doc) => {
       return { ...doc.data(), id: doc.id };
     });
@@ -166,8 +176,9 @@ deleteBeer = async (id) => {
   deleteDoc(beerRef);
 }
 
-watchBeers = (onChange) => {
-  return onSnapshot(collection(db, 'beers'), (snapshot) => {
+watchBeers = (club, onChange) => {
+  const beersQuery = query(collection(db, 'beers'), where('club', '==', club));
+  return onSnapshot(beersQuery, (snapshot) => {
     const beers = snapshot.docs.map((doc) => {
       return { ...doc.data(), id: doc.id };
     });
@@ -192,6 +203,8 @@ updateMember = async (member) => {
 }
 
 updateMemberDefaults = async (memberId) => {
+  // Update the firestore document with all defaults without overwiting existing data
+  // Would be nice if there was a firebase function to do this directly 
   const memberRef = doc(db, 'users', memberId);
   const memberDoc = await getDoc(memberRef);
   const memberData = memberDoc.data();
@@ -207,13 +220,59 @@ watchMember = (id, onChange) => {
   });
 }
 
-watchMembers = (onChange) => {
-  return onSnapshot(collection(db, 'users'), (snapshot) => {
+watchMembers = (club, onChange) => {
+  const membersQuery = query(collection(db, 'users'), where('clubs', 'array-contains', club.id));
+  return onSnapshot(membersQuery, (snapshot) => {
     const members = snapshot.docs.map((doc) => {
       return { ...doc.data(), id: doc.id };
     });
     onChange(members);
   });
+}
+
+// Club functions
+
+joinClub = async (user, club) => {
+  const userRef = doc(db, 'users', user);
+  await updateDoc(userRef, { clubs: arrayUnion(club.id) });
+}
+
+leaveClub = async (user, club) => {
+  const userRef = doc(db, 'users', user);
+  await updateDoc(userRef, { clubs: arrayRemove(club.id) });
+}
+
+updateClub = async (club) => {
+  const clubRef = doc(db, 'clubs', club.id);
+  await setDoc(clubRef, club, { merge: true });
+}
+
+watchClub = (id, onChange) => {
+  return onSnapshot(doc(db, 'clubs', id), (snapshot) => {
+    const club = snapshot.data();
+    club.id = snapshot.id;
+    onChange(club);
+  })
+}
+
+watchClubs = (ids, onChange) => {
+  const clubsQuery = query(collection(db, 'clubs'), where(documentId(), 'in', ids));
+  return onSnapshot(clubsQuery, (snapshot) => {
+    const clubs = snapshot.docs.map((doc) => {
+      return { ...doc.data(), id: doc.id };
+    });
+    onChange(clubs);
+  })
+}
+
+watchAllClubs = (onChange) => {
+  return onSnapshot(collection(db, 'clubs'), (snapshot) => {
+    const clubs = snapshot.docs.map((doc) => {
+      return { ...doc.data(), id: doc.id };
+    });
+    onChange(clubs);
+  })
+  
 }
 
 // Photo functions

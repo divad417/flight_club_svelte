@@ -1,6 +1,15 @@
 // Session type matching the firebase document fields
+export interface Club {
+  id: string;
+  name: string;
+  public?: boolean;
+  sessions?: any;
+  beers?: any;
+};
+
 export interface Session {
   id?: string;
+  club: string;
   number: number;
   date: string;
   location: string;
@@ -11,7 +20,7 @@ export interface Session {
   count?: number;
   photos?: string[];
   recap?: string;
-}
+};
 
 // Beer type matching the firebase document fields
 export interface Beer {
@@ -22,11 +31,12 @@ export interface Beer {
   abv: number;
   style: string;
   type: string;
+  club: string;
   order: string;
   score: number;
   win: boolean;
   user: string;
-}
+};
 
 // Member type matching the firebase document fields
 export interface Member {
@@ -42,13 +52,14 @@ export interface Member {
   win_rate?: number;
   notes?: object[];
   roles: Roles;
-}
+  clubs: string[];
+};
 
 export interface Roles {
   admin: boolean;
   editor: boolean;
   viewer: boolean;
-}
+};
 
 export const userDefaults: Member = {
   id: null,
@@ -60,9 +71,33 @@ export const userDefaults: Member = {
   roles: {
     admin: false,
     editor: true,
-    viewer: true 
-  }
-}
+    viewer: true
+  },
+  clubs: []
+};
+
+export const beerDefaults: Beer = {
+  id: '',
+  session: null,
+  name: '',
+  brewery: '',
+  abv: null,
+  style: '',
+  type: '',
+  club: '',
+  order: '',
+  score: null,
+  win: false,
+  user: ''
+};
+
+export const sessionDefaults: Session = {
+  id: '',
+  club: '',
+  number: null,
+  date: '',
+  location: ''
+};
 
 // Information on how to display sessions in a table
 export const sessionView = [
@@ -101,9 +136,18 @@ export const memberView = [
 ];
 
 export const roleView = [
-  { key: 'admin', text: 'Admin', width: 80, show: (member: Member) => member.roles.admin },
-  { key: 'editor', text: 'Editor', width: 80, show: (member: Member) => member.roles.editor },
-  { key: 'viewer', text: 'Viewer', width: 80, show: (member: Member) => member.roles.viewer }
+  {
+    key: 'admin', text: 'Admin', width: 70, show: (member: Member) => member.roles.admin,
+    disable: (member: Member, user: Member) => (member.id == user.id)
+  },
+  {
+    key: 'editor', text: 'Editor', width: 70, show: (member: Member) => member.roles.editor,
+    disable: (member: Member, user: Member) => (member.roles.admin || member.id == user.id)
+  },
+  {
+    key: 'viewer', text: 'Viewer', width: 70, show: (member: Member) => member.roles.viewer,
+    disable: (member: Member, user: Member) => (member.roles.editor || member.id == user.id)
+  }
 ];
 
 export function sessionsToCsv(sessions: Session[]) {

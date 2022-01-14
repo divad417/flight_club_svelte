@@ -1,36 +1,24 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
   import type { Member } from '$lib/models';
-  import type { Unsubscribe } from '@firebase/util';
-  import { user } from '$lib/stores';
+  import { onMount, onDestroy } from 'svelte';
+  import { user, clubs, activeClub } from '$lib/stores';
+  import { login, logout, watchAuthState } from '$lib/firebase';
 
+  // Need this object accessible to open the modal box programatically
   let navbarElement: Element;
   let navbarCollapse: any;
-
-  let onLogin: () => void;
-  let onLogout: () => void;
-  const onUpdate = (updatedUser: Member) => {
-    $user = updatedUser;
-  };
-  let unsubscribeAuthState: Unsubscribe;
-
   onMount(async () => {
-    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
     const Collapse = (await import('bootstrap/js/dist/collapse.js')).default;
-    const { login, logout, watchAuthState } = await import('$lib/firebase');
     await import('bootstrap/js/dist/dropdown.js');
-    await import('bootstrap/js/dist/button.js');
-
-    // Need this object accessible to open the modal box programatically
     navbarCollapse = new Collapse(navbarElement, { toggle: false });
-
-    onLogin = login;
-    onLogout = logout;
-
-    // Watch for login/logout events from the auth library
-    unsubscribeAuthState = watchAuthState(onUpdate);
   });
-  onDestroy(() => unsubscribeAuthState());
+
+  // Watch for login/logout events from the auth library
+  const unsubscribe = watchAuthState((updatedUser: Member) => {
+    $user = updatedUser;
+  });
+
+  onDestroy(unsubscribe);
 
   function closeNavbar() {
     // Bootstrap navbars don't auto-close, so added that feature
@@ -58,13 +46,13 @@
   <div id="navbarNav" class="collapse navbar-collapse mt-2" bind:this={navbarElement}>
     <ul class="navbar-nav">
       <li class="nav-item">
+        <a class="nav-link px-2" href="/club">Club</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link px-2" href="/sessions">Sessions</a>
       </li>
       <li class="nav-item">
         <a class="nav-link px-2" href="/beers">Beers</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link px-2" href="/members">Members</a>
       </li>
     </ul>
     <hr class="dropdown-divider" />
@@ -73,7 +61,7 @@
         <li class="nav-item dropdown">
           <a
             class="nav-link px-2"
-            href={'#'}
+            href={undefined}
             role="button"
             data-bs-toggle="dropdown"
             aria-expanded="false"
@@ -86,16 +74,25 @@
               src={$user.photoURL}
               alt="Profile"
             />
-          </a>
+        </a>
           <div class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-            <a class="dropdown-item" href={'/member/' + $user.id}>Profile</a>
+            {#each $clubs as club}
+              <button
+                class="dropdown-item"
+                class:active={club == $activeClub}
+                on:click={() => ($activeClub = club.id)}
+              >
+                {club.name}
+              </button>
+            {/each}
             <hr class="dropdown-divider" />
-            <a href={'#'} class="dropdown-item" on:click={onLogout}>Sign Out</a>
+            <a class="dropdown-item" href={'/member/' + $user.id}>Profile</a>
+            <button class="dropdown-item" on:click={logout}>Sign Out</button>
           </div>
         </li>
       {:else}
         <li class="nav-item">
-          <button class="btn btn-light" on:click={onLogin}>Sign in with Google</button>
+          <button class="btn btn-light" on:click={login}>Sign in with Google</button>
         </li>
       {/if}
     </ul>
@@ -120,5 +117,10 @@
   .nav-link:hover {
     background: #ffda7b;
     cursor: pointer;
+  }
+  .dropdown-item.active {
+    background-color: #ffda7b;
+    border-color: #ffda7b;
+    color: #222;
   }
 </style>

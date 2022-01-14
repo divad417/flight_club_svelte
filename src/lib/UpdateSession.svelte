@@ -1,30 +1,24 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { onMount } from 'svelte';
-  import { user } from '$lib/stores';
   import type { Session } from '$lib/models';
-
-  let onSubmit: () => void;
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { user, activeClub } from '$lib/stores';
+  import { newSessionId, updateSession } from '$lib/firebase';
+  import { sessionDefaults } from '$lib/models';
 
   onMount(async () => {
-    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
     await import('bootstrap/js/dist/modal.js');
-    const { newSessionId, updateSession } = await import('$lib/firebase');
+  })
 
-    onSubmit = async () => {
-      session.id = session.id ? session.id : newSessionId();
-      console.log(session.id);
-      await updateSession(session);
-      goto(`/session/${session.id}`);
-    };
-  });
+  async function onSubmit() {
+    session.id = session.id ? session.id : newSessionId();
+    console.log(session.id);
+    session.club = $activeClub.id;
+    await updateSession(session);
+    goto(`/session/${session.id}`);
+  }
 
-  export let session: Session = {
-    id: '',
-    number: null,
-    date: '',
-    location: ''
-  };
+  export let session = sessionDefaults;
 
   $: submitDisabled = session.number == null;
 </script>

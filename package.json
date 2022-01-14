@@ -14,7 +14,7 @@
   "devDependencies": {
     "@sveltejs/adapter-auto": "next",
     "@sveltejs/adapter-static": "^1.0.0-next.23",
-    "@sveltejs/kit": "next",
+    "@sveltejs/kit": "^1.0.0-next.224",
     "@types/bootstrap": "^5.1.8",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",

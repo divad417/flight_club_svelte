@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { onMount, onDestroy, createEventDispatcher } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { Beer, beerView, beersToCsv } from '$lib/models';
   import type { Unsubscribe } from '@firebase/util';
+  import { onDestroy, createEventDispatcher } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { activeClub } from '$lib/stores';
+  import { Beer, beerView, beersToCsv } from '$lib/models';
+  import { getSessionId, getMemberId, watchBeers } from '$lib/firebase';
 
   const dispatch = createEventDispatcher();
 
@@ -17,42 +19,37 @@
   let beers: any[] = [];
   let beerList: Beer[] = [];
   let searchTerm: string = '';
-  const onUpdate = (update: any[]) => {
-    beers = update;
-  };
-  let unsubscribe: Unsubscribe;
-  let onClickBeer: (beer: Beer, key: string) => void;
+  let unsubscribe: Unsubscribe = () => undefined;
 
-  onMount(async () => {
-    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
-    const { getSessionId, getMemberId, watchBeers } = await import('$lib/firebase');
-
+  $: {
+    unsubscribe();
     // Get beers from the database and watch for updates
-    unsubscribe = watchBeers(onUpdate);
+    unsubscribe = watchBeers($activeClub.id, (update: any[]) => {
+      beers = update;
+    });
+    onDestroy(unsubscribe);
+  }
 
-    onClickBeer = async (beer, key) => {
-      // A bit hacky but change click behavior for displaying beers on different pages
-      if (editable) {
-        // Dispatch click events to parent to handle more complex actions (ie. editing)
-        dispatch('beerClick', beer);
-      } else if (key == 'Session') {
-        // Goto a specific session page
-        const id = await getSessionId(beer.session);
-        goto(`/session/${id}`);
-      } else if (key == 'Member') {
-        try {
-          // Goto a specific member page
-          const id = await getMemberId(beer.user);
-          goto(`/member/${id}`);
-        } catch (error) {
-          console.log(error.message);
-        }
+
+  async function onClickBeer(beer: Beer, key: string) {
+    // A bit hacky but change click behavior for displaying beers on different pages
+    if (editable) {
+      // Dispatch click events to parent to handle more complex actions (ie. editing)
+      dispatch('beerClick', beer);
+    } else if (key == 'Session') {
+      // Goto a specific session page
+      const id = await getSessionId($activeClub.id, beer.session);
+      goto(`/session/${id}`);
+    } else if (key == 'Member') {
+      try {
+        // Goto a specific member page
+        const id = await getMemberId(beer.user);
+        goto(`/member/${id}`);
+      } catch (error) {
+        console.log(error.message);
       }
-    };
-  });
-  onDestroy(() => unsubscribe());
-
-  // Get beers from the database and watch for changes
+    }
+  }
 
   // Handle user inputs to re-sort, triggers the reactive block below
   function onClickColumn(key: string) {

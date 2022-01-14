@@ -1,14 +1,20 @@
 <script lang="ts">
-  import { user } from '$lib/stores';
+  import { user, activeClub } from '$lib/stores';
   import Navbar from '$lib/Navbar.svelte';
   import Footer from '$lib/Footer.svelte';
   import Login from '$lib/Login.svelte';
+  import JoinClub from '$lib/JoinClub.svelte';
 </script>
 
 <Navbar />
 <!-- Require login to view pages -->
-{#if $user }
-  <slot />
+{#if $user}
+  {#if $activeClub}
+    <slot />
+  {:else}
+    <h1>Join a Club!</h1>
+    <JoinClub />
+  {/if}
 {:else}
   <Login />
 {/if}

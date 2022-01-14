@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
+  import type { Unsubscribe } from '@firebase/util';
+  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Member, memberView, roleView, membersToCsv } from '$lib/models';
-  import { user } from '$lib/stores';
-  import type { Unsubscribe } from '@firebase/util';
+  import { user, activeClub } from '$lib/stores';
+  import { watchMembers, updateMember } from '$lib/firebase';
 
   // Component props
   export let sortKey: string = null;
@@ -11,23 +12,22 @@
 
   let members: any[] = [];
   let memberList: Member[] = [];
-  const onUpdate = (update: any[]) => {
-    members = update;
-  };
-  let unsubscribe: Unsubscribe;
-  let onClickRole: (member: Member) => void;
+  let unsubscribe: Unsubscribe = () => undefined;
 
-  onMount(async () => {
-    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
-    const { watchMembers, updateMember } = await import('$lib/firebase');
-
+  $: {
+    unsubscribe();
     // Get members from the database and watch for changes
-    unsubscribe = watchMembers(onUpdate);
-    onClickRole = (member) => {
-      updateMember(member);
-    }
-  });
-  onDestroy(() => unsubscribe());
+    unsubscribe = watchMembers($activeClub, (update: any[]) => {
+      members = update;
+    });
+    onDestroy(unsubscribe);
+  }
+
+  function onClickRole(member: Member) {
+    if (member.roles.admin) member.roles.editor = true;
+    if (member.roles.editor) member.roles.viewer = true;
+    updateMember(member);
+  }
 
   // Handle member inputs to re-sort, triggers the reactive block below
   function onClickColumn(key: string) {
@@ -56,7 +56,6 @@
     // Goto a specific member page
     goto(`/member/${member.id}`);
   }
-
 </script>
 
 <div class="table-div">
@@ -99,7 +98,7 @@
                   class="form-check-input"
                   type="checkbox"
                   bind:checked={member.roles[field.key]}
-                  disabled={member.id == $user.id}
+                  disabled={field.disable(member, $user)}
                   on:change={() => onClickRole(member)}
                 />
               </td>

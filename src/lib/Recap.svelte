@@ -1,21 +1,15 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { user } from '$lib/stores';
   import type { Session } from '$lib/models';
+  import { user } from '$lib/stores';
+  import { updateSession } from '$lib/firebase';
+
   export let session: Session;
   let editing: boolean = false;
 
-  let doneEditing: () => void;
-
-  onMount(async () => {
-    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
-    const { updateSession } = await import('$lib/firebase');
-
-    doneEditing = () => {
-      updateSession(session);
-      editing = false;
-    };
-  });
+  function doneEditing() {
+    updateSession(session);
+    editing = false;
+  }
 </script>
 
 {#if editing}

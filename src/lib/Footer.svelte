@@ -19,7 +19,7 @@
     mix-blend-mode: multiply;
   }
   .top-footer h1 {
-    font-size: 54.3px;
+    font-size: 43.7px;
     color: #222;
     text-align: right;
     margin: auto 20px -10px auto;
@@ -29,7 +29,7 @@
   }
   .bottom-footer h1 {
     color: white;
-    font-size: 50px;
+    font-size: 40px;
     text-align: right;
     margin: -4px 20px auto auto;
   }

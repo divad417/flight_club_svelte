@@ -1,19 +1,14 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
-  import { user } from '$lib//stores';
+  import { user } from '$lib/stores';
+  import { updateMember } from '$lib/firebase';
 
   export let sessionId: string;
   let editing: boolean = false;
-  let doneEditing: () => Promise<void>;
 
-  onMount(async () => {
-    const { updateMember } = await import('$lib/firebase');
-
-    doneEditing = async () => {
-      await updateMember($user);
-      editing = false;
-    };
-  });
+  async function doneEditing() {
+    await updateMember($user);
+    editing = false;
+  }
 </script>
 
 {#if editing}

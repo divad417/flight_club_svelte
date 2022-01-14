@@ -1,46 +1,34 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import type { Beer } from '$lib/models';
+  import { onMount } from 'svelte';
+  import { activeClub } from '$lib/stores';
+  import { beerDefaults } from '$lib/models';
+  import { newBeerId, updateBeer, deleteBeer } from '$lib/firebase';
 
   // Get the bootstrap Modal HTML element to open programatically
   let updateBeerElement: Element = undefined;
-  let updateBeerModal: any = undefined;
-  let onSubmit: () => void;
-  let onDelete: () => void;
-
+  let updateBeerModal: any;
   onMount(async () => {
-    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
     const Modal = (await import('bootstrap/js/dist/modal.js')).default;
     updateBeerModal = new Modal(updateBeerElement);
-
-    const { newBeerId, updateBeer, deleteBeer } = await import('$lib/firebase');
-    onSubmit = () => {
-      if (addingNewBeer) {
-        editBeer.id = newBeerId();
-        addingNewBeer = false;
-      }
-      updateBeer(editBeer);
-    };
-    onDelete = () => {
-      if (confirm('Delete this beer?')) {
-        deleteBeer(editBeer.id);
-      }
-    };
   });
 
-  let newBeer: Beer = {
-    id: '',
-    session: null,
-    name: '',
-    brewery: '',
-    abv: null,
-    style: '',
-    type: '',
-    order: '',
-    score: null,
-    win: false,
-    user: ''
-  };
+  function onSubmit() {
+    if (addingNewBeer) {
+      editBeer.id = newBeerId();
+      addingNewBeer = false;
+    }
+    editBeer.club = $activeClub.id;
+    updateBeer(editBeer);
+  }
+
+  function onDelete() {
+    if (confirm('Delete this beer?')) {
+      deleteBeer(editBeer.id);
+    }
+  }
+
+  let newBeer = beerDefaults;
   let editBeer = newBeer;
 
   // Update the session number when the data is received

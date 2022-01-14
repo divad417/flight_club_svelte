@@ -1,26 +1,20 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import type { Session } from '$lib/models';
   import { user } from '$lib/stores';
+  import { uploadPhotos, deletePhotos } from '$lib/firebase';
+
   export let session: Session;
   let files: FileList;
 
-  let choosePhotos: () => void;
-  let onDelete: () => void;
+  function choosePhotos() {
+    uploadPhotos(session.id, files);
+  }
 
-  onMount(async () => {
-    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
-    const { uploadPhotos, deletePhotos } = await import('$lib/firebase');
-
-    choosePhotos = () => {
-      uploadPhotos(session.id, files);
-    };
-    onDelete = () => {
-      if (confirm('Delete all session photos?')) {
-        deletePhotos(session.id);
-      }
-    };
-  });
+  function onDelete() {
+    if (confirm('Delete all session photos?')) {
+      deletePhotos(session.id);
+    }
+  }
 </script>
 
 <div class="photos">

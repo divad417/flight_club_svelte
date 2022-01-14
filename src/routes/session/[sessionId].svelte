@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
+  import type { Beer, Session } from '$lib/models';
+  import { onDestroy } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { user } from '$lib/stores';
-  import type { Beer } from '$lib/models';
-  import type { Unsubscribe } from '@firebase/util';
+  import { user, activeClub } from '$lib/stores';
+  import { watchSession, deleteSession } from '$lib/firebase';
   import SessionInfo from '$lib/SessionInfo.svelte';
   import Recap from '$lib/Recap.svelte';
   import UpdateBeer from '$lib/UpdateBeer.svelte';
@@ -14,28 +14,31 @@
   import UserNotes from '$lib/UserNotes.svelte';
 
   let id: string = $page.params.sessionId;
-  let session: any = { number: null };
-  let onDelete: () => void;
+  let session: Session;
 
-  const onUpdate = (update: any) => {
+  const unsubscribeClub = activeClub.subscribe(() => {
+    if (session) {
+      // Leave this page on club change, use subscribe instead of $: for immediate effect
+      goto('/sessions');
+    }
+  })
+
+  // Get the session data and watch for changes
+  const unsubscribeSession = watchSession(id, (update: any) => {
     session = update;
-  };
-  let unsubscribe: Unsubscribe;
-
-  onMount(async () => {
-    const { watchSession, deleteSession } = await import('$lib/firebase');
-
-    // Get the session data and watch for changes
-    unsubscribe = watchSession(id, onUpdate);
-
-    onDelete = () => {
-      if (confirm(`Delete session ${session.number}?`)) {
-        deleteSession(session.id);
-        goto('/sessions');
-      }
-    };
   });
-  onDestroy(() => unsubscribe());
+
+  function onDelete() {
+    if (confirm(`Delete session ${session.number}?`)) {
+      deleteSession(session.id);
+      goto('/sessions');
+    }
+  }
+
+  onDestroy(() => {
+    unsubscribeSession();
+    unsubscribeClub();
+  });
 
   // Link things to allow clicking beers to edit them
   let openBeerEditor: (data: Beer) => void;
@@ -47,10 +50,11 @@
 </script>
 
 <svelte:head>
-  <title>FC &#183; Session {session.number ?? ''}</title>
+  <title>FC &#183; Session {session ? session.number : ''}</title>
 </svelte:head>
 
-<h1>Session {session.number ?? ''}</h1>
+<h1>Session {session ? session.number : ''}</h1>
+{#if session}
 <SessionInfo {session} />
 <h3>Recap</h3>
 <Recap bind:session />
@@ -74,6 +78,7 @@
   <UpdateSession {session} />
   <button class="btn btn-light mx-2" on:click={onDelete}>Delete Session</button>
   <hr />
+  <h3>User Notes</h3>
+  <UserNotes sessionId={id} />
 {/if}
-<h3>User Notes</h3>
-<UserNotes sessionId={id} />
+{/if}

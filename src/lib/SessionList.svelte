@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { Session, sessionView, sessionsToCsv } from '$lib/models';
   import type { Unsubscribe } from '@firebase/util';
+  import { onDestroy } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { activeClub } from '$lib/stores';
+  import { Session, sessionView, sessionsToCsv } from '$lib/models';
+  import { watchSessions } from '$lib/firebase';
 
   // Component props
   export let sortKey: string = 'number';
@@ -10,20 +12,17 @@
 
   let sessions: any[] = []; // All sessions
   let sessionList: Session[] = []; // Sorted list to display
+  let unsubscribe: Unsubscribe = () => undefined;
 
-  const onChange = (update: any[]) => {
-    sessions = update;
-  };
-  let unsubscribe: Unsubscribe;
-
-  onMount(async () => {
-    // Using dynamic imports here because of https://github.com/sveltejs/kit/issues/1650
-    const { watchSessions } = await import('$lib/firebase');
-
+  $: {
+    unsubscribe();
     // Get sessions from the database and watch for changes
-    unsubscribe = watchSessions(onChange);
-  });
-  onDestroy(() => unsubscribe());
+    unsubscribe = watchSessions($activeClub.id, (update: any[]) => {
+      sessions = update;
+    });
+    onDestroy(unsubscribe);
+  }
+
 
   // Handle user inputs to re-sort, triggers the reactive block below
   function onClickColumn(key: string) {
