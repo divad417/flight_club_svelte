@@ -23,7 +23,6 @@
     onDestroy(unsubscribe);
   }
 
-
   // Handle user inputs to re-sort, triggers the reactive block below
   function onClickColumn(key: string) {
     if (key == sortKey) {

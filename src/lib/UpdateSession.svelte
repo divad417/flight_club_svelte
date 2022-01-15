@@ -1,14 +1,16 @@
 <script lang="ts">
-  import type { Session } from '$lib/models';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { user, activeClub } from '$lib/stores';
+  import { activeClub } from '$lib/stores';
   import { newSessionId, updateSession } from '$lib/firebase';
   import { sessionDefaults } from '$lib/models';
 
   onMount(async () => {
     await import('bootstrap/js/dist/modal.js');
-  })
+  });
+
+  export let session = sessionDefaults;
+  $: submitDisabled = session.number == null;
 
   async function onSubmit() {
     session.id = session.id ? session.id : newSessionId();
@@ -17,22 +19,16 @@
     await updateSession(session);
     goto(`/session/${session.id}`);
   }
-
-  export let session = sessionDefaults;
-
-  $: submitDisabled = session.number == null;
 </script>
 
-{#if $user.roles.editor}
-  <button
-    type="button"
-    class="btn btn-light mx-2"
-    data-bs-toggle="modal"
-    data-bs-target="#updateSession"
-  >
-    {session.id ? 'Edit' : 'Add'} Session
-  </button>
-{/if}
+<button
+  type="button"
+  class="btn btn-light mx-2"
+  data-bs-toggle="modal"
+  data-bs-target="#updateSession"
+>
+  {session.id ? 'Edit' : 'Add'} Session
+</button>
 
 <div class="modal" tabindex="-1" id="updateSession">
   <div class="modal-dialog modal-dialog-centered">

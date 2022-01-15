@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Club } from '$lib/models';
   import { clubs, activeClub } from '$lib/stores';
 </script>
 

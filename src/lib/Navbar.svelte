@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Member } from '$lib/models';
   import { onMount, onDestroy } from 'svelte';
+  import { goto } from '$app/navigation';
   import { user, clubs, activeClub } from '$lib/stores';
   import { login, logout, watchAuthState } from '$lib/firebase';
 
@@ -25,6 +26,11 @@
     if (navbarCollapse != undefined) {
       navbarCollapse.hide();
     }
+  }
+
+  function onLogout() {
+    logout();
+    goto('/');
   }
 </script>
 
@@ -74,7 +80,7 @@
               src={$user.photoURL}
               alt="Profile"
             />
-        </a>
+          </a>
           <div class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
             {#each $clubs as club}
               <button
@@ -87,7 +93,7 @@
             {/each}
             <hr class="dropdown-divider" />
             <a class="dropdown-item" href={'/member/' + $user.id}>Profile</a>
-            <button class="dropdown-item" on:click={logout}>Sign Out</button>
+            <button class="dropdown-item" on:click={onLogout}>Sign Out</button>
           </div>
         </li>
       {:else}

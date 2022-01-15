@@ -16,16 +16,21 @@
   let id: string = $page.params.sessionId;
   let session: Session;
 
+  // Leave the page if active club changes, use subscribe instead of $: for immediate effect
   const unsubscribeClub = activeClub.subscribe(() => {
     if (session) {
-      // Leave this page on club change, use subscribe instead of $: for immediate effect
       goto('/sessions');
     }
-  })
+  });
 
   // Get the session data and watch for changes
   const unsubscribeSession = watchSession(id, (update: any) => {
     session = update;
+  });
+
+  onDestroy(() => {
+    unsubscribeSession();
+    unsubscribeClub();
   });
 
   function onDelete() {
@@ -35,12 +40,7 @@
     }
   }
 
-  onDestroy(() => {
-    unsubscribeSession();
-    unsubscribeClub();
-  });
-
-  // Link things to allow clicking beers to edit them
+  // Link the BeerList and UpdateBeer components for editing existing beers
   let openBeerEditor: (data: Beer) => void;
   function beerClick(event: CustomEvent) {
     if ($user.roles.editor) {
@@ -55,30 +55,33 @@
 
 <h1>Session {session ? session.number : ''}</h1>
 {#if session}
-<SessionInfo {session} />
-<h3>Recap</h3>
-<Recap bind:session />
-<h3>Beers</h3>
-{#if $user.roles.editor}
-  <UpdateBeer bind:openBeerEditor session={session.number} />
-  <span class="text-muted">(edit by selecting below)</span>
-{/if}
-<BeerList
-  filterKey="session"
-  sortKey="order"
-  filterValue={session.number}
-  editable={true}
-  on:beerClick={beerClick}
-  searchable={false}
-/>
-<h3>Photos</h3>
-<Photos {session} />
-<hr />
-{#if $user.roles.editor}
-  <UpdateSession {session} />
-  <button class="btn btn-light mx-2" on:click={onDelete}>Delete Session</button>
+  <SessionInfo {session} />
+
+  <h3>Recap</h3>
+  <Recap bind:session />
+
+  <h3>Beers</h3>
+  {#if $user.roles.editor}
+    <UpdateBeer bind:openBeerEditor session={session.number} />
+    <span class="text-muted">(edit by selecting below)</span>
+  {/if}
+  <BeerList
+    filterKey="session"
+    sortKey="order"
+    filterValue={session.number}
+    editable={true}
+    on:beerClick={beerClick}
+  />
+
+  <h3>Photos</h3>
+  <Photos {session} />
   <hr />
-  <h3>User Notes</h3>
-  <UserNotes sessionId={id} />
-{/if}
+  {#if $user.roles.editor}
+    <UpdateSession {session} />
+    <button class="btn btn-light mx-2" on:click={onDelete}>Delete Session</button>
+    <hr />
+
+    <h3>User Notes</h3>
+    <UserNotes sessionId={id} />
+  {/if}
 {/if}

@@ -7,4 +7,4 @@
 </svelte:head>
 
 <h1>Beers!</h1>
-<BeerList />
+<BeerList searchable={true} />

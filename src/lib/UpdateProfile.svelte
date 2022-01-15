@@ -9,11 +9,11 @@
     await import('bootstrap/js/dist/modal.js');
   })
 
+  $: submitDisabled = !member.name;
+
   function onSubmit() {
     updateMember(member);
   }
-
-  $: submitDisabled = !member.name;
 </script>
 
 <button

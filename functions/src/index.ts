@@ -4,7 +4,7 @@ import admin = require("firebase-admin");
 admin.initializeApp();
 const db = admin.firestore();
 
-export const onBeerUpdate = functions.firestore.document("beers/{beerId}").onWrite(async (change, context) => {
+export const onBeerUpdate = functions.firestore.document("beers/{beerId}").onWrite(async (change) => {
     const session = change.after.exists ? change.after.get("session") : change.before.get("session");
     const user = change.after.exists ? change.after.get("user") : change.before.get("user");
     functions.logger.log("Recalculating session", session, "and user", user)
@@ -22,7 +22,7 @@ export const onUserUpdate = functions.firestore.document("users/{userId}").onWri
     }
 });
 
-export const updateAll = functions.firestore.document("testing/{id}").onWrite(async (change, context) => {
+export const updateAll = functions.firestore.document("testing/{id}").onWrite(async () => {
     const sessionsRefs = await db.collection("sessions").listDocuments();
     for (const sessionRef of sessionsRefs) {
         const session = await sessionRef.get();

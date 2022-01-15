@@ -15,6 +15,8 @@
   let clubs: Club[] = [];
   let selected: Club = null;
   let unsubscribe: Unsubscribe = () => undefined;
+  
+  $: submitDisabled = !selected;
 
   function onJoinClub() {
     unsubscribe = watchAllClubs((update) => {
@@ -31,7 +33,6 @@
     joinClubModal.hide();
   }
 
-  $: submitDisabled = !selected;
 </script>
 
 <div class="text-center">

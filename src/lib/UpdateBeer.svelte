@@ -13,37 +13,33 @@
     updateBeerModal = new Modal(updateBeerElement);
   });
 
-  function onSubmit() {
-    if (addingNewBeer) {
-      editBeer.id = newBeerId();
-      addingNewBeer = false;
-    }
-    editBeer.club = $activeClub.id;
-    updateBeer(editBeer);
-  }
-
-  function onDelete() {
-    if (confirm('Delete this beer?')) {
-      deleteBeer(editBeer.id);
-    }
-  }
-
+  export let session: number;
   let newBeer = beerDefaults;
   let editBeer = newBeer;
-
-  // Update the session number when the data is received
-  export let session: number;
-  $: newBeer.session = session;
-
   let addingNewBeer = false;
+  $: newBeer.session = session;
+  $: submitDisabled = editBeer.session ? false : true;
+  
   export function openBeerEditor(data: Beer, newBeer: boolean = false) {
     addingNewBeer = newBeer;
     editBeer = { ...data };
     updateBeerModal.show();
   }
 
-  // Require a session number to create a beer
-  $: submitDisabled = editBeer.session ? false : true;
+  function onSubmit() {
+    if (addingNewBeer) {
+      editBeer.id = newBeerId();
+      addingNewBeer = false;
+    }  
+    editBeer.club = $activeClub.id;
+    updateBeer(editBeer);
+  }  
+
+  function onDelete() {
+    if (confirm('Delete this beer?')) {
+      deleteBeer(editBeer.id);
+    }  
+  }  
 </script>
 
 <button type="button" class="btn btn-light mx-2" on:click={() => openBeerEditor(newBeer, true)}>

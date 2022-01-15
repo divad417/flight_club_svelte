@@ -28,4 +28,4 @@
   <UpdateProfile bind:member />
 {/if}
 <h1>Beers</h1>
-<BeerList filterKey="user" filterValue={member.name} searchable={false} />
+<BeerList filterKey="user" filterValue={member.name} />

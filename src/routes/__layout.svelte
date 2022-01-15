@@ -3,17 +3,16 @@
   import Navbar from '$lib/Navbar.svelte';
   import Footer from '$lib/Footer.svelte';
   import Login from '$lib/Login.svelte';
-  import JoinClub from '$lib/JoinClub.svelte';
+  import NewUser from '$lib/NewUser.svelte';
 </script>
 
 <Navbar />
-<!-- Require login to view pages -->
+<!-- Require login and active club selected to view pages -->
 {#if $user}
   {#if $activeClub}
     <slot />
   {:else}
-    <h1>Join a Club!</h1>
-    <JoinClub />
+    <NewUser />
   {/if}
 {:else}
   <Login />

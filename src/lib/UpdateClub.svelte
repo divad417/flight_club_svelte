@@ -8,12 +8,11 @@
   })
 
   $: club = $activeClub;
+  $: submitDisabled = !club.name;
 
   function onSubmit() {
     updateClub(club);
   }
-
-  $: submitDisabled = !club.name;
 </script>
 
 <button

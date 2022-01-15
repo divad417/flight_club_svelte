@@ -12,7 +12,7 @@
   export let filterKey: string = null;
   export let filterValue: string | number = null;
   export let editable: boolean = false;
-  export let searchable: boolean = true;
+  export let searchable: boolean = false;
   export let sortKey: string = 'brewery';
   export let ascending: boolean = true;
 

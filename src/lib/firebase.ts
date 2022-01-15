@@ -1,6 +1,26 @@
 import type { Beer, Session, Member, Club } from '$lib/models';
 import type { Unsubscribe } from '@firebase/util';
 import { userDefaults } from '$lib/models';
+import { initializeApp } from '@firebase/app';
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from '@firebase/auth';
+import {
+  enableIndexedDbPersistence,
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  query,
+  where,
+  getDoc,
+  getDocs,
+  deleteDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  onSnapshot,
+  documentId
+} from '@firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL, list, deleteObject } from '@firebase/storage';
 
 export let login: () => void;
 export let logout: () => void;
@@ -43,28 +63,6 @@ const firebaseConfig = {
   appId: '1:34180351223:web:df3852031092f57f333ff2'
 };
 
-// Hack to prevent svelte from running firebase code on the server, see https://github.com/sveltejs/kit/issues/1650
-
-import { initializeApp } from '@firebase/app';
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from '@firebase/auth';
-import {
-  enableIndexedDbPersistence,
-  getFirestore,
-  collection,
-  doc,
-  setDoc,
-  query,
-  where,
-  getDoc,
-  getDocs,
-  deleteDoc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
-  onSnapshot,
-  documentId
-} from '@firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL, list, deleteObject } from '@firebase/storage';
 
 
 // Firebase initialization
