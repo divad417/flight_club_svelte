@@ -50,7 +50,7 @@ export interface Member {
   avg_abv?: number;
   wins?: number;
   win_rate?: number;
-  notes?: object[];
+  notes?: object;
   roles: Roles;
   clubs: string[];
 };
@@ -67,7 +67,7 @@ export const userDefaults: Member = {
   full_name: null,
   email: null,
   photoURL: null,
-  notes: [],
+  notes: {},
   roles: {
     admin: false,
     editor: true,

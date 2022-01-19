@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Beer, Session } from '$lib/models';
+  import type { Club, Session, Beer } from '$lib/models';
   import { onDestroy } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
@@ -15,12 +15,14 @@
 
   let id: string = $page.params.sessionId;
   let session: Session;
+  let clubId: string;
 
   // Leave the page if active club changes, use subscribe instead of $: for immediate effect
-  const unsubscribeClub = activeClub.subscribe(() => {
-    if (session) {
+  const unsubscribeClub = activeClub.subscribe((update) => {
+    if (session && update.id != clubId) {
       goto('/sessions');
     }
+    clubId = update.id;
   });
 
   // Get the session data and watch for changes

@@ -27,7 +27,9 @@ function userStore(): Writable<Member> {
         } else {
             // Always populate the defaults in the user object when logged in
             value = { ...userDefaults, ...userUpdate };
-            activeClub.set(value.clubs[0])
+            if (!activeClub.value()) {
+                activeClub.set(value.clubs[0]);
+            }
         }
 
         if (!subscribedToUser && value.id) {
@@ -126,7 +128,8 @@ function activeClubStore(clubs: Readable<Club[]>) {
     return {
         subscribe,
         set,
-        update
+        update,
+        value: () => value
     }
 }
 
