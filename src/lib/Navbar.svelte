@@ -3,7 +3,9 @@
   import { onMount, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { user, clubs, activeClub } from '$lib/stores';
-  import { login, logout, watchAuthState } from '$lib/firebase';
+  import { logout, watchAuthState } from '$lib/firebase';
+  import GoogleSignIn from '$lib/GoogleSignIn.svelte';
+import GoogleSIgnIn from '$lib/GoogleSignIn.svelte';
 
   // Need this object accessible to open the modal box programatically
   let navbarElement: Element;
@@ -98,7 +100,7 @@
         </li>
       {:else}
         <li class="nav-item">
-          <button class="btn btn-light" on:click={login}>Sign in with Google</button>
+          <GoogleSignIn />
         </li>
       {/if}
     </ul>

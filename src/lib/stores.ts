@@ -1,7 +1,6 @@
 import type { Member, Club } from "$lib/models";
 import type { Unsubscribe } from "@firebase/util";
 import type { Unsubscriber, Writable, Readable } from "svelte/store";
-import { writable } from "svelte/store";
 import { watchMember, watchClubs } from "$lib/firebase";
 import { userDefaults } from "$lib/models";
 

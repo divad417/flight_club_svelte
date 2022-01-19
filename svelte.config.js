@@ -17,7 +17,7 @@ const config = {
       fallback: 'index.html'
     }),
     prerender: {
-      enabled: false
+      entries: ['/privacy', '/tos']
     }
   }
 };
