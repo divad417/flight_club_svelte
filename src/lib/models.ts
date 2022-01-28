@@ -38,6 +38,14 @@ export interface Beer {
   user: string;
 };
 
+export interface MemberData {
+  wins: number,
+  avg_score: number,
+  avg_abv: number,
+  count: number,
+  win_rate: number
+}
+
 // Member type matching the firebase document fields
 export interface Member {
   id: string;
@@ -45,14 +53,10 @@ export interface Member {
   full_name: string;
   email: string;
   photoURL: string;
-  count?: number;
-  avg_score?: number;
-  avg_abv?: number;
-  wins?: number;
-  win_rate?: number;
   notes?: object;
   roles: Roles;
   clubs: string[];
+  data: { [id: string]: MemberData };
 };
 
 export interface Roles {
@@ -73,7 +77,8 @@ export const userDefaults: Member = {
     editor: true,
     viewer: true
   },
-  clubs: []
+  clubs: [],
+  data: {}
 };
 
 export const beerDefaults: Beer = {
@@ -125,14 +130,14 @@ export const beerView = [
 
 // Information on how to display members in a table
 export const memberView = [
-  { key: 'name', text: 'Member', width: 120, show: (member: Member) => member.name ?? '' },
-  { key: 'wins', text: 'Wins', width: 100, show: (member: Member) => member.wins ?? '' },
-  { key: 'count', text: 'Beers', width: 100, show: (member: Member) => member.count ?? '' },
-  { key: 'avg_abv', text: 'Avg ABV', width: 120, show: (member: Member) => (member.avg_abv ? member.avg_abv.toFixed(1) : '') },
-  { key: 'avg_score', text: 'Avg Score', width: 120, show: (member: Member) => (member.avg_score ? member.avg_score.toFixed(1) : '') },
-  { key: 'win_rate', text: 'Win Rate', width: 120, show: (member: Member) => (member.win_rate ? member.win_rate.toFixed(3) : '') },
-  { key: 'full_name', text: 'Google Name', width: 180, show: (member: Member) => member.full_name },
-  { key: 'email', text: 'Email', width: 220, show: (member: Member) => member.email }
+  { key: 'name', text: 'Member', width: 120, show: (member: Member, club: string) => member.name ?? '' },
+  { key: 'wins', text: 'Wins', width: 100, show: (member: Member, club: string) => member.data[club].wins ?? '' },
+  { key: 'count', text: 'Beers', width: 100, show: (member: Member, club: string) => member.data[club].count ?? '' },
+  { key: 'avg_abv', text: 'Avg ABV', width: 120, show: (member: Member, club: string) => (member.data[club].avg_abv ? member.data[club].avg_abv.toFixed(1) : '') },
+  { key: 'avg_score', text: 'Avg Score', width: 120, show: (member: Member, club: string) => (member.data[club].avg_score ? member.data[club].avg_score.toFixed(1) : '') },
+  { key: 'win_rate', text: 'Win Rate', width: 120, show: (member: Member, club: string) => (member.data[club].win_rate ? member.data[club].win_rate.toFixed(3) : '') },
+  { key: 'full_name', text: 'Google Name', width: 180, show: (member: Member, club: string) => member.full_name },
+  { key: 'email', text: 'Email', width: 220, show: (member: Member, club: string) => member.email }
 ];
 
 export const roleView = [

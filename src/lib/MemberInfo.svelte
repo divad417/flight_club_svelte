@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { Member } from '$lib/models';
+  import { activeClub } from '$lib/stores';
   export let member: Member;
+  $: activeData = member.data ? member.data[$activeClub.id] ? member.data[$activeClub.id] : {} : {};
 </script>
 
 <div class="row mx-3 mb-3 align-items-center" style="max-width: 600px">
@@ -19,13 +21,13 @@
   <div class="col-sm">
     <p>
       <strong>Wins:</strong>
-      {member.wins ? member.wins : ''}
+      {activeData.wins ? activeData.wins : ''}
     </p>
   </div>
   <div class="col-sm">
     <p>
       <strong>Avg Score:</strong>
-      {member.avg_score ? member.avg_score.toFixed(1) : ''}
+      {activeData.avg_score ? activeData.avg_score.toFixed(1) : ''}
     </p>
   </div>
 </div>
@@ -33,13 +35,13 @@
   <div class="col-sm">
     <p>
       <strong>Avg ABV:</strong>
-      {member.avg_abv ? member.avg_abv.toFixed(1) : ''}
+      {activeData.avg_abv ? activeData.avg_abv.toFixed(1) : ''}
     </p>
   </div>
   <div class="col-sm">
     <p>
       <strong>Win Rate:</strong>
-      {member.win_rate ? member.win_rate.toFixed(2) : ''}
+      {activeData.win_rate ? activeData.win_rate.toFixed(2) : ''}
     </p>
   </div>
 </div>

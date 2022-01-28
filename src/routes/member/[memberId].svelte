@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { page } from '$app/stores';
-  import { user } from '$lib/stores';
+  import { goto } from '$app/navigation';
+  import { user, activeClub } from '$lib/stores';
   import { watchMember } from '$lib/firebase';
   import MemberInfo from '$lib/MemberInfo.svelte';
   import BeerList from '$lib/BeerList.svelte';
@@ -9,13 +10,29 @@
 
   let member: any = { name: null };
   let id: string = $page.params.memberId;
+  let clubId: string;
+
+  // Leave the page if active club changes, use subscribe instead of $: for immediate effect
+  const unsubscribeClub = activeClub.subscribe((update) => {
+    if (
+      id != $user.id && // For logged in user, all clubs will be valid
+      clubId && // Only leave if page is already populated
+      update.id != clubId  // Only leave if there is actually a change to the activeClub
+    ) { 
+      goto('/club');
+    }
+    clubId = update.id;
+  });
 
   // Get member from the database and watch for changes
-  const unsubscribe = watchMember(id, (update: any) => {
+  const unsubscribeMember = watchMember(id, (update: any) => {
     member = update;
   });
 
-  onDestroy(unsubscribe);
+  onDestroy(() => {
+    unsubscribeClub();
+    unsubscribeMember();
+  });
 </script>
 
 <svelte:head>

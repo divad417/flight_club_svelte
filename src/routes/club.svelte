@@ -5,9 +5,10 @@
   import UpdateClub from '$lib/UpdateClub.svelte';
   import MemberList from '$lib/MemberList.svelte';
 
-  function onLeaveClub() {
+  async function onLeaveClub() {
     if (confirm(`Leave ${$activeClub.name}?`)) {
-      leaveClub($user.id, $activeClub);
+      await leaveClub($user.id, $activeClub);
+      $activeClub = $user.clubs[0];
       goto('/');
     }
   }

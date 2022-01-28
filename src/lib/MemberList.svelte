@@ -89,7 +89,7 @@
       {#each memberList as member}
         <tr>
           {#each memberView as field}
-            <td on:click={() => onClickMember(member)}>{field.show(member)}</td>
+            <td on:click={() => onClickMember(member)}>{field.show(member, $activeClub.id)}</td>
           {/each}
           {#if $user.roles.admin}
             {#each roleView as field}
