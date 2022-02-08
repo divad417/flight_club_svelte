@@ -5,7 +5,6 @@
   import { user, clubs, activeClub } from '$lib/stores';
   import { logout, watchAuthState } from '$lib/firebase';
   import GoogleSignIn from '$lib/GoogleSignIn.svelte';
-import GoogleSIgnIn from '$lib/GoogleSignIn.svelte';
 
   // Need this object accessible to open the modal box programatically
   let navbarElement: Element;

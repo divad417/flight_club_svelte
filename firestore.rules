@@ -14,7 +14,7 @@ service cloud.firestore {
     }
     match /users/{document=**} {
       allow read: if request.auth != null;
-      allow write: if getRole('editor') == true;
+      allow write: if true;
     }
     match /clubs/{document=**} {
     	allow read: if request.auth != null;
