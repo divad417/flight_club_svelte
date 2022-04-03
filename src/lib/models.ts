@@ -128,14 +128,27 @@ export const beerView = [
   { key: 'user', text: 'Member', width: 120, show: (beer: Beer) => beer.user ?? '' }
 ];
 
+function makeDataFormatter(parameter: string, float: undefined | number = undefined): (member: Member, club: string) => string {
+  return (member: Member, club: string) => {
+    if (!member.data[club] || !member.data[club][parameter]) {
+      return '';
+    }
+    if (float == undefined) {
+      return member.data[club][parameter];
+    } else {
+      return member.data[club][parameter].toFixed(float);
+    }
+  }
+}
+
 // Information on how to display members in a table
 export const memberView = [
   { key: 'name', text: 'Member', width: 120, show: (member: Member, club: string) => member.name ?? '' },
-  { key: 'wins', text: 'Wins', width: 100, show: (member: Member, club: string) => member.data[club].wins ?? '' },
-  { key: 'count', text: 'Beers', width: 100, show: (member: Member, club: string) => member.data[club].count ?? '' },
-  { key: 'avg_abv', text: 'Avg ABV', width: 120, show: (member: Member, club: string) => (member.data[club].avg_abv ? member.data[club].avg_abv.toFixed(1) : '') },
-  { key: 'avg_score', text: 'Avg Score', width: 120, show: (member: Member, club: string) => (member.data[club].avg_score ? member.data[club].avg_score.toFixed(1) : '') },
-  { key: 'win_rate', text: 'Win Rate', width: 120, show: (member: Member, club: string) => (member.data[club].win_rate ? member.data[club].win_rate.toFixed(3) : '') },
+  { key: 'wins', text: 'Wins', width: 100, show: makeDataFormatter('wins') },
+  { key: 'count', text: 'Beers', width: 100, show: makeDataFormatter('count') },
+  { key: 'avg_abv', text: 'Avg ABV', width: 120, show: makeDataFormatter('avg_abv', 1) },
+  { key: 'avg_score', text: 'Avg Score', width: 120, show: makeDataFormatter('avg_score', 1) },
+  { key: 'win_rate', text: 'Win Rate', width: 120, show: makeDataFormatter('win_rate', 3) },
   { key: 'full_name', text: 'Google Name', width: 180, show: (member: Member, club: string) => member.full_name },
   { key: 'email', text: 'Email', width: 220, show: (member: Member, club: string) => member.email }
 ];
