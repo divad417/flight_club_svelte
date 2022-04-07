@@ -1,11 +1,13 @@
 import * as m from '../lib/models';
 
+const requiredProperties = [
+    'id',
+    'name'
+]
+
 describe('userDefaults', () => {
-    test.each
-    it('should have property: id', () => {
-        expect(m.userDefaults).toHaveProperty('id')
-    })
-    it('should have propery: name', () => {
-        expect(m.userDefaults).toHaveProperty('name')
-    })
+    test.each(requiredProperties)(`should have property: $key`, (key) => {
+            expect(m.userDefaults).toHaveProperty(key)
+        }
+    )
 })
