@@ -207,6 +207,10 @@ updateMemberDefaults = async (memberId) => {
   const memberDoc = await getDoc(memberRef);
   const memberData = memberDoc.data();
   const update = { ...userDefaults, ...memberData };
+  if (!update.name) {
+    // If empty, set the name to the Google user's first name
+    update.name = memberData.full_name.split(' ')[0];
+  }
   await setDoc(memberRef, update, { merge: true });
 }
 
