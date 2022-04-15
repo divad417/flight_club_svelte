@@ -7,7 +7,7 @@
   import { watchMembers, updateMember } from '$lib/firebase';
 
   // Component props
-  export let sortKey: string = null;
+  export let sortKey: string = 'name';
   export let ascending: boolean = true;
 
   let members: any[] = [];
