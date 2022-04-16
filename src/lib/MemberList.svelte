@@ -63,7 +63,7 @@
     <thead>
       <tr>
         {#each memberView as field}
-          <th width={field.width} on:click={() => onClickColumn(field.key)}>
+          <th width={field.width} on:click={() => onClickColumn(field.key)} style:cursor='pointer'>
             {field.text}
             {#if field.key == sortKey}
               <span class="arrow">
@@ -89,7 +89,9 @@
       {#each memberList as member}
         <tr>
           {#each memberView as field}
-            <td on:click={() => onClickMember(member)}>{field.show(member, $activeClub.id)}</td>
+            <td on:click={() => onClickMember(member)} style:cursor='pointer'>
+              {field.show(member, $activeClub.id)}
+            </td>
           {/each}
           {#if $user.roles.admin}
             {#each roleView as field}
@@ -100,6 +102,7 @@
                   bind:checked={member.roles[field.key]}
                   disabled={field.disable(member, $user)}
                   on:change={() => onClickRole(member)}
+                  style:cursor='pointer'
                 />
               </td>
             {/each}

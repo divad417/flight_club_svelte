@@ -7,6 +7,7 @@
   import MemberInfo from '$lib/MemberInfo.svelte';
   import BeerList from '$lib/BeerList.svelte';
   import UpdateProfile from '$lib/UpdateProfile.svelte';
+  import ClubList from '$lib/ClubList.svelte';
 
   let member: any = { name: null };
   let id: string = $page.params.memberId;
@@ -19,7 +20,7 @@
       clubId && // Only leave if page is already populated
       update.id != clubId  // Only leave if there is actually a change to the activeClub
     ) { 
-      goto('/club');
+      goto('/members');
     }
     clubId = update.id;
   });
@@ -41,6 +42,7 @@
 
 <h1>{member.name}</h1>
 <MemberInfo {member} />
+<ClubList goOnClick={false} />
 {#if id == $user.id || $user.roles.admin}
   <UpdateProfile bind:member />
 {/if}

@@ -11,10 +11,11 @@
   // Component props
   export let filterKey: string = null;
   export let filterValue: string | number = null;
-  export let editable: boolean = false;
-  export let searchable: boolean = false;
-  export let sortKey: string = 'brewery';
   export let ascending: boolean = true;
+  export let sortKey: string = 'brewery';
+  export let searchable: boolean = false;
+  export let clickToEdit: boolean = false;
+  export let hasBeers: boolean = false;
 
   let beers: any[] = [];
   let beerList: Beer[] = [];
@@ -30,17 +31,16 @@
     onDestroy(unsubscribe);
   }
 
-
   async function onClickBeer(beer: Beer, key: string) {
     // A bit hacky but change click behavior for displaying beers on different pages
-    if (editable) {
+    if (clickToEdit) {
       // Dispatch click events to parent to handle more complex actions (ie. editing)
       dispatch('beerClick', beer);
-    } else if (key == 'Session') {
+    } else if (key == 'session') {
       // Goto a specific session page
       const id = await getSessionId($activeClub.id, beer.session);
       goto(`/session/${id}`);
-    } else if (key == 'Member') {
+    } else if (key == 'user') {
       try {
         // Goto a specific member page
         const id = await getMemberId(beer.user);
@@ -49,6 +49,11 @@
         console.log(error.message);
       }
     }
+  }
+
+  const isLink = (type: string) => {
+    // Used to make the cursor a pointer when the cell is clickable
+    return clickToEdit || type == 'session' || type == 'user';
   }
 
   // Handle user inputs to re-sort, triggers the reactive block below
@@ -96,6 +101,7 @@
 
     // Filter and sort the list for rendering
     beerList = beers.filter(search).sort(compare);
+    hasBeers = !!beerList.length;
   }
 </script>
 
@@ -136,7 +142,9 @@
       {#each beerList as beer}
         <tr>
           {#each beerView.filter((field) => field.key != filterKey) as field}
-            <td on:click={() => onClickBeer(beer, field.text)}>{field.show(beer)}</td>
+            <td on:click={() => onClickBeer(beer, field.key)} class:is-link={isLink(field.key)}>
+              {field.show(beer)}
+            </td>
           {/each}
         </tr>
       {/each}
@@ -163,5 +171,8 @@
   }
   th {
     text-align: left;
+  }
+  .is-link {
+    cursor: pointer;
   }
 </style>

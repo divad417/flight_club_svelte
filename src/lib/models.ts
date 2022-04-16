@@ -122,9 +122,9 @@ export const beerView = [
   { key: 'name', text: 'Name', width: 180, show: (beer: Beer) => beer.name ?? '' },
   { key: 'brewery', text: 'Brewery', width: 180, show: (beer: Beer) => beer.brewery ?? '' },
   { key: 'type', text: 'Style', width: 180, show: (beer: Beer) => beer.type ?? '' },
-  { key: 'abv', text: 'ABV', width: 100, show: (beer: Beer) => (beer.abv ? beer.abv : '') },
-  { key: 'score', text: 'Votes', width: 100, show: (beer: Beer) => beer.score },
-  { key: 'win', text: 'Result', width: 100, show: (beer: Beer) => (beer.win ? 'Win' : '') },
+  { key: 'abv', text: 'ABV', width: 100, show: (beer: Beer) => beer.abv ?? '' },
+  { key: 'score', text: 'Votes', width: 100, show: (beer: Beer) => beer.score ?? '' },
+  { key: 'win', text: 'Result', width: 100, show: (beer: Beer) => beer.win ? 'Win' : '' },
   { key: 'user', text: 'Member', width: 120, show: (beer: Beer) => beer.user ?? '' }
 ];
 

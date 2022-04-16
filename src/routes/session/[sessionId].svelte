@@ -16,6 +16,7 @@
   let id: string = $page.params.sessionId;
   let session: Session;
   let clubId: string;
+  let hasBeers: boolean;
 
   // Leave the page if active club changes, use subscribe instead of $: for immediate effect
   const unsubscribeClub = activeClub.subscribe((update) => {
@@ -36,6 +37,10 @@
   });
 
   function onDelete() {
+    if (hasBeers || session.photos.length) {
+      alert('Delete all beers and photos before deleting session');
+      return;
+    }
     if (confirm(`Delete session ${session.number}?`)) {
       deleteSession(session.id);
       goto('/sessions');
@@ -71,8 +76,9 @@
     filterKey="session"
     sortKey="order"
     filterValue={session.number}
-    editable={true}
+    clickToEdit={true}
     on:beerClick={beerClick}
+    bind:hasBeers
   />
 
   <h3>Photos</h3>

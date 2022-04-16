@@ -53,7 +53,7 @@
   <div id="navbarNav" class="collapse navbar-collapse mt-2" bind:this={navbarElement}>
     <ul class="navbar-nav">
       <li class="nav-item">
-        <a class="nav-link px-2" href="/club">Club</a>
+        <a class="nav-link px-2" href="/members">Members</a>
       </li>
       <li class="nav-item">
         <a class="nav-link px-2" href="/sessions">Sessions</a>

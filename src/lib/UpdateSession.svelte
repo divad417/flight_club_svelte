@@ -14,7 +14,6 @@
 
   async function onSubmit() {
     session.id = session.id ? session.id : newSessionId();
-    console.log(session.id);
     session.club = $activeClub.id;
     await updateSession(session);
     goto(`/session/${session.id}`);
@@ -38,7 +37,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" />
       </div>
       <div class="modal-body">
-        <form class="edit-form">
+        <form id="update-session" class="edit-form">
           <div class="row mb-3 align-items-center">
             <label for="number" class="col-sm-3 col-form-label">Number</label>
             <div class="col-sm-9">
@@ -61,7 +60,8 @@
       </div>
       <div class="modal-footer">
         <button
-          type="button"
+          type="submit"
+          form="update-session"
           class="btn btn-light"
           on:click={onSubmit}
           data-bs-dismiss="modal"

@@ -32,7 +32,7 @@ import { goto } from '$app/navigation';
     unsubscribe();
     $activeClub = selected.id;
     joinClubModal.hide();
-    goto('/club');
+    goto('/members');
   }
 
 </script>

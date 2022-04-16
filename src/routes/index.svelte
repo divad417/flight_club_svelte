@@ -7,13 +7,19 @@
   <title>Flight Club</title>
 </svelte:head>
 
-<h1>Welcome</h1>
-<ClubList />
-<JoinClub />
+<div>
+  <h1>Welcome</h1>
+  <ClubList />
+  <JoinClub />
+</div>
 
 <style>
-  h1 {
+  div {
     text-align: center;
+    max-width: 300px;
     margin: 80px auto;
+  }
+  h1 {
+    margin: 30px;
   }
 </style>

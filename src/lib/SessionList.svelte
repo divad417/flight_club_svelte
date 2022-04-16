@@ -57,7 +57,7 @@
     <thead>
       <tr>
         {#each sessionView as field}
-          <th width={field.width} on:click={() => onClickColumn(field.key)} class="text-start">
+          <th width={field.width} on:click={() => onClickColumn(field.key)} class="text-start" style:cursor='pointer'>
             {field.text}
             {#if field.key == sortKey}
               <span class="arrow">
@@ -76,7 +76,9 @@
       {#each sessionList as session}
         <tr>
           {#each sessionView as field}
-            <td on:click={() => onClickSession(session)}>{field.show(session)}</td>
+            <td on:click={() => onClickSession(session)} style:cursor='pointer'>
+              {field.show(session)}
+            </td>
           {/each}
         </tr>
       {/each}

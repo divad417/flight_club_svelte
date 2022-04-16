@@ -54,7 +54,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" />
       </div>
       <div class="modal-body">
-        <form class="edit-form">
+        <form id="update-beer" class="edit-form">
           <div class="row mb-3 align-items-center">
             <label for="session" class="col-sm-3 col-form-label">Session</label>
             <div class="col">
@@ -149,7 +149,8 @@
           hidden={addingNewBeer}>Delete</button
         >
         <button
-          type="button"
+          type="submit"
+          form="update-beer"
           class="btn btn-light"
           on:click={onSubmit}
           data-bs-dismiss="modal"
