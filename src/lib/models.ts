@@ -153,6 +153,16 @@ export const memberView = [
   { key: 'email', text: 'Email', width: 220, show: (member: Member, club: string) => member.email }
 ];
 
+export const memberCompare: {[key: string]: (member: Member, club: string) => any } = {
+  name: (member, club) => member.name,
+  wins: (member, club) => member.data[club].wins,
+  count: (member, club) => member.data[club].count,
+  avg_abv: (member, club) => member.data[club].avg_abv,
+  avg_score: (member, club) => member.data[club].avg_score,
+  win_rate: (member, club) => member.data[club].win_rate,
+  full_name: (member, club) => member.full_name,
+  email: (member, club) => member.email
+}
 export const roleView = [
   {
     key: 'admin', text: 'Admin', width: 70, show: (member: Member) => member.roles.admin,

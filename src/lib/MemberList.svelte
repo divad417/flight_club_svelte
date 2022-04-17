@@ -2,7 +2,7 @@
   import type { Unsubscribe } from '@firebase/util';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { Member, memberView, roleView, membersToCsv } from '$lib/models';
+  import { Member, memberView, memberCompare, roleView, membersToCsv } from '$lib/models';
   import { user, activeClub } from '$lib/stores';
   import { watchMembers, updateMember } from '$lib/firebase';
 
@@ -41,9 +41,9 @@
   // Reactive block which re-runs when the sort type changes
   $: {
     function compare(a: Member, b: Member) {
-      if (a[sortKey] > b[sortKey]) {
+      if (memberCompare[sortKey](a, $activeClub.id) > memberCompare[sortKey](b, $activeClub.id)) {
         return ascending ? 1 : -1;
-      } else if (a[sortKey] < b[sortKey]) {
+      } else if (memberCompare[sortKey](a, $activeClub.id) < memberCompare[sortKey](b, $activeClub.id)) {
         return ascending ? -1 : 1;
       } else {
         return 0;
