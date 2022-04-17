@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, createEventDispatcher } from 'svelte';
   import type { Member } from '$lib/models';
   import { updateMember } from '$lib/firebase';
+
+  const dispatch = createEventDispatcher();
 
   export let member: Member;
 
@@ -13,6 +15,7 @@
 
   function onSubmit() {
     updateMember(member);
+    dispatch('blur');
   }
 </script>
 

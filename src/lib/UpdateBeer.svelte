@@ -1,9 +1,11 @@
 <script lang="ts">
   import type { Beer } from '$lib/models';
-  import { onMount } from 'svelte';
+  import { onMount, createEventDispatcher } from 'svelte';
   import { activeClub } from '$lib/stores';
   import { beerDefaults } from '$lib/models';
   import { newBeerId, updateBeer, deleteBeer } from '$lib/firebase';
+
+  const dispatch = createEventDispatcher()
 
   // Get the bootstrap Modal HTML element to open programatically
   let updateBeerElement: Element = undefined;
@@ -33,6 +35,7 @@
     }  
     editBeer.club = $activeClub.id;
     updateBeer(editBeer);
+    dispatch('blur');
   }  
 
   function onDelete() {

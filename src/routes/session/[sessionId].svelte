@@ -75,9 +75,9 @@
 <h1>
   Session {session ? session.number : ''}
   <div style:float="right">
-    <a name='back' on:click={() => jumpSession(false)} style:cursor='pointer'>&#x25c0</a>
+    <a name='back' on:click={() => jumpSession(false)} style:cursor='pointer'>&#x276e</a>
     &#160
-    <a name='next' on:click={() => jumpSession(true)} style:cursor='pointer'>&#x25b6</a>
+    <a name='next' on:click={() => jumpSession(true)} style:cursor='pointer'>&#x276f</a>
     &#160
   </div>
 </h1>
