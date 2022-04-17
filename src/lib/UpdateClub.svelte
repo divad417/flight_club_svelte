@@ -1,9 +1,7 @@
 <script lang="ts">
-  import { onMount, createEventDispatcher } from 'svelte';
+  import { onMount } from 'svelte';
   import { updateClub } from '$lib/firebase';
   import { activeClub } from '$lib/stores';
-
-  const dispatch = createEventDispatcher();
 
   onMount(async () => {
     await import('bootstrap/js/dist/modal.js');
@@ -14,7 +12,7 @@
 
   function onSubmit() {
     updateClub(club);
-    dispatch('blur');
+    if (document.activeElement instanceof HTMLElement) { document.activeElement.blur() };
   }
 </script>
 

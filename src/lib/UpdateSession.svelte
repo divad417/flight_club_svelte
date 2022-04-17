@@ -1,11 +1,9 @@
 <script lang="ts">
-  import { onMount, createEventDispatcher } from 'svelte';
+  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { activeClub } from '$lib/stores';
   import { newSessionId, updateSession } from '$lib/firebase';
   import { sessionDefaults } from '$lib/models';
-
-  const dispatch = createEventDispatcher();
 
   onMount(async () => {
     await import('bootstrap/js/dist/modal.js');
@@ -19,7 +17,7 @@
     session.club = $activeClub.id;
     await updateSession(session);
     goto(`/session/${session.id}`);
-    dispatch('blur');
+    if (document.activeElement instanceof HTMLElement) { document.activeElement.blur() };
   }
 </script>
 

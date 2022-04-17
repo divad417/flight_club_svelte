@@ -1,9 +1,7 @@
 <script lang="ts">
-  import { onMount, createEventDispatcher } from 'svelte';
+  import { onMount } from 'svelte';
   import type { Member } from '$lib/models';
   import { updateMember } from '$lib/firebase';
-
-  const dispatch = createEventDispatcher();
 
   export let member: Member;
 
@@ -15,7 +13,7 @@
 
   function onSubmit() {
     updateMember(member);
-    dispatch('blur');
+    if (document.activeElement instanceof HTMLElement) { document.activeElement.blur() };
   }
 </script>
 
