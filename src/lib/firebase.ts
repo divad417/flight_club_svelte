@@ -11,6 +11,7 @@ import {
   setDoc,
   query,
   where,
+  limit,
   getDoc,
   getDocs,
   deleteDoc,
@@ -32,6 +33,7 @@ export let updateSession: (session: Session) => Promise<void>;
 export let deleteSession: (id: string) => Promise<void>;
 export let watchSession: (id: string, onChange: (session: any) => void) => Unsubscribe;
 export let watchSessions: (club: string, onChange: (sessions: any[]) => void) => Unsubscribe;
+export let findSession: (club: string, number: number) => Promise<string | false>;
 
 export let newBeerId: () => string;
 export let updateBeer: (beer: Beer) => Promise<void>;
@@ -157,6 +159,18 @@ watchSessions = (club, onChange) => {
   });
 }
 
+findSession = async (club, number) => {
+  const sessionQuery = query(collection(db, 'sessions'),
+    where('club', '==', club),
+    where('number', '==', number));
+  const result = await getDocs(sessionQuery);
+  if (!result.empty) {
+    return result.docs[0].id;
+  } else {
+    return false;
+  }
+}
+
 // Beer functions
 
 newBeerId = () => {
@@ -274,7 +288,7 @@ watchAllClubs = (onChange) => {
     });
     onChange(clubs);
   })
-  
+
 }
 
 // Photo functions
