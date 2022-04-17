@@ -25,7 +25,7 @@
   $: {
     unsubscribe();
     // Get beers from the database and watch for updates
-    unsubscribe = watchBeers($activeClub.id, (update: any[]) => {
+    unsubscribe = watchBeers($activeClub.id, (update) => {
       beers = update;
     });
     onDestroy(unsubscribe);

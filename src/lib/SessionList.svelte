@@ -17,7 +17,7 @@
   $: {
     unsubscribe();
     // Get sessions from the database and watch for changes
-    unsubscribe = watchSessions($activeClub.id, (update: any[]) => {
+    unsubscribe = watchSessions($activeClub.id, (update) => {
       sessions = update;
     });
     onDestroy(unsubscribe);

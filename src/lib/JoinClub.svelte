@@ -4,7 +4,7 @@
   import { onMount } from 'svelte';
   import { user, activeClub } from '$lib/stores';
   import { watchAllClubs, joinClub } from '$lib/firebase';
-import { goto } from '$app/navigation';
+  import { goto } from '$app/navigation';
 
   let joinClubElement: Element = undefined;
   let joinClubModal: any;

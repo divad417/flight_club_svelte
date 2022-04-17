@@ -37,7 +37,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" />
       </div>
       <div class="modal-body">
-        <form id="update-session" class="edit-form">
+        <form id="update-session" class="edit-form" on:submit|preventDefault={onSubmit}>
           <div class="row mb-3 align-items-center">
             <label for="number" class="col-sm-3 col-form-label">Number</label>
             <div class="col-sm-9">

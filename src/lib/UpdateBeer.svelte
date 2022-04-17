@@ -54,7 +54,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" />
       </div>
       <div class="modal-body">
-        <form id="update-beer" class="edit-form">
+        <form id="update-beer" class="edit-form" on:submit|preventDefault={onSubmit}>
           <div class="row mb-3 align-items-center">
             <label for="session" class="col-sm-3 col-form-label">Session</label>
             <div class="col">

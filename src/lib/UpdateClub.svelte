@@ -32,7 +32,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" />
       </div>
       <div class="modal-body">
-        <form class="edit-form">
+        <form class="edit-form" id="update-club" on:submit|preventDefault={onSubmit}>
           <div class="row mb-3 align-items-center">
             <label for="name" class="col-sm-3 col-form-label"> Name </label>
             <div class="col-sm-9">
@@ -43,7 +43,8 @@
       </div>
       <div class="modal-footer">
         <button
-          type="button"
+          type="submit"
+          form="update-club"
           class="btn btn-light"
           on:click={onSubmit}
           data-bs-dismiss="modal"

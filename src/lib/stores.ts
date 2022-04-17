@@ -1,6 +1,6 @@
 import type { Member, Club } from "$lib/models";
 import type { Unsubscribe } from "@firebase/util";
-import type { Unsubscriber, Writable, Readable } from "svelte/store";
+import type { Writable, Readable } from "svelte/store";
 import { watchMember, watchClubs } from "$lib/firebase";
 import { userDefaults } from "$lib/models";
 
@@ -25,19 +25,15 @@ function userStore(): Writable<Member> {
             // Logout
             value = null;
         } else {
-            // Always populate the defaults in the user object when logged in
             value = { ...userDefaults, ...userUpdate };
-            if (!activeClub.value()) {
-                activeClub.set(value.clubs[0]);
-            }
         }
 
         if (!subscribedToUser && value.id) {
+            subscribedToUser = true;
             // On first login, subscribe to changes on the firebase user document
             unsubscribe = watchMember(value.id, (update) => {
                 set(update)
             });
-            subscribedToUser = true;
         } else if (!value && subscribedToUser) {
             // Unsubscribe on logout
             unsubscribe();
@@ -56,80 +52,98 @@ function userStore(): Writable<Member> {
     }
 }
 
-function clubsStore(userStore: Writable<Member>): Readable<Club[]> {
+function clubsStore(user: Writable<Member>): Readable<Club[]> {
     let value: Club[] = [];
     let subs = [];
-    let user: Member = null;
+    let clubList: string[] = [];
+    let subscribedToUser: boolean = false;
 
-    let subscribedToUser = false;
-    let unsubscribeUser: Unsubscriber;
-    let unsubscribeClubs = () => undefined;
+    let unsubscribeClubs: Unsubscribe = () => undefined;
+    let unsubscribeUser = () => undefined;
 
     const subscribe = (handler: (value: Club[]) => void) => {
         subs = [...subs, handler];
-        if (!subscribedToUser && subs) {
-            // Setup the watchers when first subscribed
-            unsubscribeUser = userStore.subscribe((userUpdate) => {
-                user = userUpdate;
-                unsubscribeClubs();
-                if (user && user.clubs.length) {
-                    unsubscribeClubs = watchClubs(user.clubs, (clubsUpdate) => {
-                        value = clubsUpdate;
+        if (!subscribedToUser) {
+            unsubscribeUser = user.subscribe((userUpdate) => {
+                if (userUpdate && userUpdate.clubs.length > 0 && userUpdate.clubs != clubList) {
+                    // When a user is logged in with a valid club list, get or update that list 
+                    unsubscribeClubs();
+                    unsubscribeClubs = watchClubs(userUpdate.clubs, (update) => {
+                        value = update;
                         subs.forEach(sub => sub(value));
-                    });
+                    })
                 }
-            });
+            })
+
         }
         handler(value);
         return () => {
             subs = subs.filter(sub => sub != handler);
             if (!subs) {
-                // Teardown when no one watching anymore
                 unsubscribeClubs();
                 unsubscribeUser();
                 subscribedToUser = false;
-            };
-        };
+                clubList = [];
+            }
+        }
     }
 
     return {
-        subscribe,
+        subscribe
     }
 }
 
 function activeClubStore(clubs: Readable<Club[]>) {
+    console.log('here')
+    let id: string = null;
     let value: Club;
     let subs = [];
     let clubList: Club[] = [];
-    let activeId: string = null;
+    let subscribedToClub: boolean = false;
+
+    let unsubscribe = () => undefined;
 
     const subscribe = (handler: (value: Club) => void) => {
         subs = [...subs, handler];
+        if (!subscribedToClub) {
+            unsubscribe = clubs.subscribe((clubsUpdate) => {
+                if (clubsUpdate.length > 0) {
+                    clubList = clubsUpdate;
+                    if (!id) { 
+                        id = clubList[0].id;
+                    }
+                    value = clubList.find(club => club.id == id);
+                    subs.forEach(sub => sub(value));
+                }
+            })
+        }
         handler(value);
         return () => {
             subs = subs.filter(sub => sub != handler);
+            if (!subs) { 
+                unsubscribe();
+                subscribedToClub = false;
+            };
         }
     }
 
-    const set = (id: string) => {
-        activeId = id;
-        value = clubList.find(club => club.id == activeId);
-        subs.forEach(sub => sub(value))
+    const set = (update: string) => {
+        if (!value || update != id) {
+            id = update;
+            if (clubList.length > 0) {
+                value = clubList.find(club => club.id == id);
+                subs.forEach(sub => sub(value));
+            }
+        }
     }
 
     const update = (updateFunction: (value: Club) => string) => set(updateFunction(value));
-
-
-    clubs.subscribe((updatedClubs) => {
-        clubList = updatedClubs;
-        set(activeId);
-    })
 
     return {
         subscribe,
         set,
         update,
-        value: () => value
+        value: () => value,
     }
 }
 
