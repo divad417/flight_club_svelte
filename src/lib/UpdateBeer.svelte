@@ -1,14 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { Beer } from '$lib/models';
-  import { activeClub } from '$lib/stores';
-  import { beerDefaults } from '$lib/models';
-  import { newBeerId, updateBeer, deleteBeer } from '$lib/firebase';
+  import type { Beer } from '#lib/models.js';
+  import { activeClub } from '#lib/stores.js';
+  import { beerDefaults } from '#lib/models.js';
+  import { newBeerId, updateBeer, deleteBeer } from '#lib/firebase.js';
 
 
   // Get the bootstrap Modal HTML element to open programatically
   let updateBeerElement: Element = undefined;
-  let updateBeerModal: any;
+  let updateBeerModal: InstanceType<typeof import('bootstrap/js/dist/modal.js').default>;
   onMount(async () => {
     const Modal = (await import('bootstrap/js/dist/modal.js')).default;
     updateBeerModal = new Modal(updateBeerElement);
@@ -53,7 +53,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3 class="modal-title m-0">{addingNewBeer ? 'Add' : 'Edit'} Beer</h3>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" />
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <form id="update-beer" class="edit-form" on:submit|preventDefault={onSubmit}>

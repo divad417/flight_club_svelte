@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { activeClub } from '$lib/stores';
-  import { newSessionId, updateSession } from '$lib/firebase';
-  import { sessionDefaults } from '$lib/models';
+  import { resolve } from '$app/paths';
+  import { activeClub } from '#lib/stores.js';
+  import { newSessionId, updateSession } from '#lib/firebase.js';
+  import { sessionDefaults } from '#lib/models.js';
 
   onMount(async () => {
     await import('bootstrap/js/dist/modal.js');
@@ -16,7 +17,7 @@
     session.id = session.id ? session.id : newSessionId();
     session.club = $activeClub.id;
     await updateSession(session);
-    goto(`/session/${session.id}`);
+        goto(resolve('/(app)/session/[sessionId]', { sessionId: session.id }));
     if (document.activeElement instanceof HTMLElement) { document.activeElement.blur() };
   }
 </script>
@@ -35,7 +36,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3 class="modal-title m-0">{session.id ? 'Edit' : 'Add'} Session</h3>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" />
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <form id="update-session" class="edit-form" on:submit|preventDefault={onSubmit}>

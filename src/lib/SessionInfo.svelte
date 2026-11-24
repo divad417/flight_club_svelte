@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Session } from '$lib/models';
+  import type { Session } from '#lib/models.js';
   export let session: Session;
 </script>
 

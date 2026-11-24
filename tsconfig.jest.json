@@ -1,0 +1,23 @@
+{
+  // Standalone config for ts-jest: the app tsconfig extends $app/tsconfig
+  // (noEmit/rootDirs), which TS 6 rejects when ts-jest resolves the common
+  // source directory. Test-only compilation keeps its own minimal options.
+  "compilerOptions": {
+    "target": "esnext",
+    "rootDir": ".",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["jest"],
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true
+  },
+  "include": ["src", "jest.config.mjs"]
+}

@@ -2,9 +2,11 @@
   import type { Unsubscribe } from '@firebase/util';
   import { onDestroy, createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
-  import { activeClub } from '$lib/stores';
-  import { Beer, beerView, beersToCsv } from '$lib/models';
-  import { getSessionId, getMemberId, watchBeers } from '$lib/firebase';
+  import { resolve } from '$app/paths';
+  import { activeClub } from '#lib/stores.js';
+  import type { Beer } from '#lib/models.js';
+  import { beerView, beersToCsv } from '#lib/models.js';
+  import { getSessionId, getMemberId, watchBeers } from '#lib/firebase.js';
 
   const dispatch = createEventDispatcher();
 
@@ -17,7 +19,7 @@
   export let clickToEdit: boolean = false;
   export let hasBeers: boolean = false;
 
-  let beers: any[] = [];
+  let beers: Beer[] = [];
   let beerList: Beer[] = [];
   let searchTerm: string = '';
   let unsubscribe: Unsubscribe = () => undefined;
@@ -39,12 +41,12 @@
     } else if (key == 'session') {
       // Goto a specific session page
       const id = await getSessionId($activeClub.id, beer.session);
-      goto(`/session/${id}`);
+            goto(resolve('/(app)/session/[sessionId]', { sessionId: id }));
     } else if (key == 'user') {
       try {
         // Goto a specific member page
         const id = await getMemberId(beer.user);
-        goto(`/member/${id}`);
+                goto(resolve('/(app)/member/[memberId]', { memberId: id }));
       } catch (error) {
         console.log(error.message);
       }
@@ -122,8 +124,8 @@
   <table class="table table-striped table-hover">
     <thead>
       <tr>
-        {#each beerView.filter((field) => field.key != filterKey) as field}
-          <th width={field.width} on:click={() => onClickColumn(field.key)}>
+        {#each beerView.filter((field) => field.key != filterKey) as field (field.key)}
+          <th style:width={field.width} on:click={() => onClickColumn(field.key)}>
             {field.text}
             {#if field.key == sortKey}
               <span class="arrow">
@@ -139,9 +141,9 @@
       </tr>
     </thead>
     <tbody>
-      {#each beerList as beer}
+      {#each beerList as beer (beer.id)}
         <tr>
-          {#each beerView.filter((field) => field.key != filterKey) as field}
+          {#each beerView.filter((field) => field.key != filterKey) as field (field.key)}
             <td on:click={() => onClickBeer(beer, field.key)} class:is-link={isLink(field.key)}>
               {field.show(beer)}
             </td>

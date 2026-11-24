@@ -1,17 +1,21 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { updateClub } from '$lib/firebase';
-  import { activeClub } from '$lib/stores';
+  import type { Club } from '#lib/models.js';
+  import { updateClub } from '#lib/firebase.js';
+  import { activeClub } from '#lib/stores.js';
 
   onMount(async () => {
     await import('bootstrap/js/dist/modal.js');
   })
 
-  $: club = $activeClub;
-  $: submitDisabled = !club.name;
+  let clubName: string;
+  $: clubName = $activeClub?.name ?? '';
+  $: submitDisabled = !clubName;
 
   function onSubmit() {
-    updateClub(club);
+    const updated: Club = { ...$activeClub, name: clubName };
+    activeClub.set(updated);
+    updateClub(updated);
     if (document.activeElement instanceof HTMLElement) { document.activeElement.blur() };
   }
 </script>
@@ -30,14 +34,14 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3 class="modal-title m-0">Edit Club</h3>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" />
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <form class="edit-form" id="update-club" on:submit|preventDefault={onSubmit}>
           <div class="row mb-3 align-items-center">
             <label for="name" class="col-sm-3 col-form-label"> Name </label>
             <div class="col-sm-9">
-              <input id="name" bind:value={club.name} class="form-control" type="string" />
+              <input id="name" bind:value={clubName} class="form-control" type="string" />
             </div>
           </div>
         </form>

@@ -1,19 +1,21 @@
 <script lang="ts">
   import type { Unsubscribe } from '@firebase/util';
-  import { afterUpdate, onDestroy } from 'svelte';
-  import { page } from '$app/stores';
+  import { onDestroy } from 'svelte';
+  import { page } from '$app/state';
   import { goto } from '$app/navigation';
-  import { user, activeClub } from '$lib/stores';
-  import { watchMember } from '$lib/firebase';
-  import MemberInfo from '$lib/MemberInfo.svelte';
-  import BeerList from '$lib/BeerList.svelte';
-  import UpdateProfile from '$lib/UpdateProfile.svelte';
-  import ClubList from '$lib/ClubList.svelte';
+  import { resolve } from '$app/paths';
+  import { userDefaults, type Member } from '#lib/models.js';
+  import { user, activeClub } from '#lib/stores.js';
+  import { watchMember } from '#lib/firebase.js';
+  import MemberInfo from '#lib/MemberInfo.svelte';
+  import BeerList from '#lib/BeerList.svelte';
+  import UpdateProfile from '#lib/UpdateProfile.svelte';
+  import ClubList from '#lib/ClubList.svelte';
 
-  let member: any = { name: null };
+  let member: Member = { ...userDefaults };
   let clubId: string;
 
-  $: isCurrentUser = ($page.params.memberId == $user.id);
+  $: isCurrentUser = (page.params.memberId == $user.id);
   
   // Leave the page if active club changes, use subscribe instead of $: for immediate effect
   const unsubscribeClub = activeClub.subscribe((update) => {
@@ -22,7 +24,7 @@
       clubId && // Only leave if page is already populated
       update.id != clubId  // Only leave if there is actually a change to the activeClub
     ) { 
-      goto('/members');
+            goto(resolve('/members'));
     }
     clubId = update.id;
   });
@@ -31,7 +33,7 @@
   let unsubscribeMember: Unsubscribe;
   $: {
     if (unsubscribeMember) { unsubscribeMember() }
-    unsubscribeMember = watchMember($page.params.memberId, (update: any) => {
+    unsubscribeMember = watchMember(page.params.memberId, (update: Member) => {
       member = update;
     });
   }

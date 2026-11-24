@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { Member } from '$lib/models';
-  import { activeClub } from '$lib/stores';
+  import type { Member } from '#lib/models.js';
+  import { activeClub } from '#lib/stores.js';
   export let member: Member;
-  $: activeData = member.data ? member.data[$activeClub.id] ? member.data[$activeClub.id] : {} : {};
+  $: activeData = member.data ? (member.data[$activeClub.id] ?? null) : null;
 </script>
 
 <div class="row mx-3 mb-3 align-items-center" style="max-width: 600px">
@@ -21,7 +21,7 @@
   <div class="col-sm">
     <p>
       <strong>Wins:</strong>
-      {activeData.wins ? activeData.wins : ''}
+      {activeData?.wins ? activeData.wins : ''}
     </p>
   </div>
   <div class="col-sm">

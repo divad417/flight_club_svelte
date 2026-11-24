@@ -1,8 +1,8 @@
-import type { Member, Club } from "$lib/models";
+import type { Member, Club } from "#lib/models.js";
 import type { Unsubscribe } from "@firebase/util";
 import type { Writable, Readable } from "svelte/store";
-import { watchMember, watchClubs } from "$lib/firebase";
-import { userDefaults } from "$lib/models";
+import { watchMember, watchClubs } from "#lib/firebase.js";
+import { userDefaults } from "#lib/models.js";
 
 function userStore(): Writable<Member> {
     let value: Member = null;
@@ -93,8 +93,17 @@ function clubsStore(user: Writable<Member>): Readable<Club[]> {
     }
 }
 
-function activeClubStore(clubs: Readable<Club[]>) {
-    console.log('here')
+type ActiveClubStore = {
+    subscribe: (handler: (value: Club) => void) => () => void;
+    set: (update: Club | string) => void;
+    update: (updateFunction: (value: Club) => string) => void;
+    value: () => Club;
+};
+
+// Holds the currently selected club. set() accepts either a Club object or
+// its id string; subscribers always receive a Club object (or undefined
+// while the club list is still loading).
+function activeClubStore(clubs: Readable<Club[]>): ActiveClubStore {
     let id: string = null;
     let value: Club;
     let subs = [];
@@ -127,9 +136,10 @@ function activeClubStore(clubs: Readable<Club[]>) {
         }
     }
 
-    const set = (update: string) => {
-        if (!value || update != id) {
-            id = update;
+    const set = (update: Club | string) => {
+        const updateId: string = typeof update === 'string' ? update : update.id;
+        if (!value || updateId != id) {
+            id = updateId;
             if (clubList.length > 0) {
                 value = clubList.find(club => club.id == id);
                 subs.forEach(sub => sub(value));

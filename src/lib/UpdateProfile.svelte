@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { Member } from '$lib/models';
-  import { updateMember } from '$lib/firebase';
+  import type { Member } from '#lib/models.js';
+  import { updateMember } from '#lib/firebase.js';
 
   export let member: Member;
 
@@ -31,7 +31,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3 class="modal-title m-0">Edit Profile</h3>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" />
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <form class="edit-form" id="update-profile" on:submit|preventDefault={onSubmit}>

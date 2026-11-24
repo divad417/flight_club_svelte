@@ -1,5 +1,5 @@
 <script lang="ts">
-    import JoinClub from '$lib/JoinClub.svelte';
+    import JoinClub from '#lib/JoinClub.svelte';
 </script>
 
 <h1>Join a club!</h1>

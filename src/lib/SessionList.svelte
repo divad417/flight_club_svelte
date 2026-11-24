@@ -2,15 +2,17 @@
   import type { Unsubscribe } from '@firebase/util';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { activeClub } from '$lib/stores';
-  import { Session, sessionView, sessionsToCsv } from '$lib/models';
-  import { watchSessions } from '$lib/firebase';
+  import { resolve } from '$app/paths';
+  import { activeClub } from '#lib/stores.js';
+  import type { Session } from '#lib/models.js';
+  import { sessionView, sessionsToCsv } from '#lib/models.js';
+  import { watchSessions } from '#lib/firebase.js';
 
   // Component props
   export let sortKey: string = 'number';
   export let ascending: boolean = false;
 
-  let sessions: any[] = []; // All sessions
+  let sessions: Session[] = []; // All sessions
   let sessionList: Session[] = []; // Sorted list to display
   let unsubscribe: Unsubscribe = () => undefined;
 
@@ -48,7 +50,7 @@
 
   function onClickSession(session: Session) {
     // Go to a specific session page
-    goto(`/session/${session.id}`);
+        goto(resolve('/(app)/session/[sessionId]', { sessionId: session.id }));
   }
 </script>
 
@@ -56,8 +58,8 @@
   <table class="table table-striped table-hover">
     <thead>
       <tr>
-        {#each sessionView as field}
-          <th width={field.width} on:click={() => onClickColumn(field.key)} class="text-start" style:cursor='pointer'>
+        {#each sessionView as field (field.key)}
+          <th style:width={field.width} on:click={() => onClickColumn(field.key)} class="text-start" style:cursor='pointer'>
             {field.text}
             {#if field.key == sortKey}
               <span class="arrow">
@@ -73,9 +75,9 @@
       </tr>
     </thead>
     <tbody>
-      {#each sessionList as session}
+      {#each sessionList as session (session.id)}
         <tr>
-          {#each sessionView as field}
+          {#each sessionView as field (field.key)}
             <td on:click={() => onClickSession(session)} style:cursor='pointer'>
               {field.show(session)}
             </td>

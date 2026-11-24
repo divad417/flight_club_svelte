@@ -3,8 +3,8 @@ export interface Club {
   id: string;
   name: string;
   public?: boolean;
-  sessions?: any;
-  beers?: any;
+  sessions?: Session[];
+  beers?: Beer[];
 };
 
 export interface Session {
@@ -57,6 +57,15 @@ export interface Member {
   roles: Roles;
   clubs: string[];
   data: { [id: string]: MemberData };
+};
+
+// A member partial derived from a Google sign-in before defaults are populated.
+// The Google-derived fields may be null, so this is not a full Member.
+export interface MemberFromGoogle {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  photoURL: string | null;
 };
 
 export interface Roles {
@@ -143,25 +152,25 @@ function makeDataFormatter(parameter: string, float: undefined | number = undefi
 
 // Information on how to display members in a table
 export const memberView = [
-  { key: 'name', text: 'Member', width: 120, show: (member: Member, club: string) => member.name ?? '' },
+  { key: 'name', text: 'Member', width: 120, show: (member: Member, _club: string) => member.name ?? '' },
   { key: 'wins', text: 'Wins', width: 100, show: makeDataFormatter('wins') },
   { key: 'count', text: 'Beers', width: 100, show: makeDataFormatter('count') },
   { key: 'avg_abv', text: 'Avg ABV', width: 120, show: makeDataFormatter('avg_abv', 1) },
   { key: 'avg_score', text: 'Avg Score', width: 120, show: makeDataFormatter('avg_score', 1) },
   { key: 'win_rate', text: 'Win Rate', width: 120, show: makeDataFormatter('win_rate', 3) },
-  { key: 'full_name', text: 'Google Name', width: 180, show: (member: Member, club: string) => member.full_name },
-  { key: 'email', text: 'Email', width: 220, show: (member: Member, club: string) => member.email }
+  { key: 'full_name', text: 'Google Name', width: 180, show: (member: Member, _club: string) => member.full_name },
+  { key: 'email', text: 'Email', width: 220, show: (member: Member, _club: string) => member.email }
 ];
 
-export const memberCompare: {[key: string]: (member: Member, club: string) => any } = {
-  name: (member, club) => member.name,
+export const memberCompare: {[key: string]: (member: Member, club: string) => string | number } = {
+  name: (member, _club) => member.name,
   wins: (member, club) => member.data[club].wins,
   count: (member, club) => member.data[club].count,
   avg_abv: (member, club) => member.data[club].avg_abv,
   avg_score: (member, club) => member.data[club].avg_score,
   win_rate: (member, club) => member.data[club].win_rate,
-  full_name: (member, club) => member.full_name,
-  email: (member, club) => member.email
+  full_name: (member, _club) => member.full_name,
+  email: (member, _club) => member.email
 }
 export const roleView = [
   {
@@ -201,7 +210,7 @@ function downloadCsv(filename: string, keys: Array<string>, data: Array<object>)
   const csvText = [keys.join(','), dataText].join('\n');
 
   // This makes the browser "download" a file from the text string created
-  var element = document.createElement('a');
+  const element = document.createElement('a');
   element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csvText));
   element.setAttribute('download', filename);
   element.style.display = 'none';

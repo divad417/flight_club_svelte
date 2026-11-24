@@ -1,5 +1,5 @@
 import { render } from '@testing-library/svelte';
-import Footer from '$lib/Footer.svelte';
+import Footer from '#lib/Footer.svelte';
 
 
 describe('Footer', () => {

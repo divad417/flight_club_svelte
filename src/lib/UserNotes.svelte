@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { user } from '$lib/stores';
-  import { updateMember } from '$lib/firebase';
+  import { user } from '#lib/stores.js';
+  import { updateMember } from '#lib/firebase.js';
 
   export let sessionId: string;
   let editing: boolean = false;
@@ -18,8 +18,7 @@
       bind:value={$user.notes[sessionId]}
       class="form-control"
       rows="7"
-      on:focusout={doneEditing}
-    />
+      on:focusout={doneEditing}></textarea>
     <button class="btn btn-light" on:click={doneEditing}>Done</button>
   </div>
 {:else}

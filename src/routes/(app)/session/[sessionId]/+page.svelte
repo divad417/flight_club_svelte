@@ -1,18 +1,19 @@
 <script lang="ts">
-  import type { Session, Beer } from '$lib/models';
+  import type { Session, Beer } from '#lib/models.js';
   import type { Unsubscribe } from '@firebase/util';
   import { onDestroy } from 'svelte';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { goto } from '$app/navigation';
-  import { user, activeClub } from '$lib/stores';
-  import { watchSession, deleteSession, findSession } from '$lib/firebase';
-  import SessionInfo from '$lib/SessionInfo.svelte';
-  import Recap from '$lib/Recap.svelte';
-  import UpdateBeer from '$lib/UpdateBeer.svelte';
-  import BeerList from '$lib/BeerList.svelte';
-  import UpdateSession from '$lib/UpdateSession.svelte';
-  import Photos from '$lib/Photos.svelte';
-  import UserNotes from '$lib/UserNotes.svelte';
+  import { resolve } from '$app/paths';
+  import { user, activeClub } from '#lib/stores.js';
+  import { watchSession, deleteSession, findSession } from '#lib/firebase.js';
+  import SessionInfo from '#lib/SessionInfo.svelte';
+  import Recap from '#lib/Recap.svelte';
+  import UpdateBeer from '#lib/UpdateBeer.svelte';
+  import BeerList from '#lib/BeerList.svelte';
+  import UpdateSession from '#lib/UpdateSession.svelte';
+  import Photos from '#lib/Photos.svelte';
+  import UserNotes from '#lib/UserNotes.svelte';
 
   let session: Session;
   let clubId: string;
@@ -22,14 +23,14 @@
   // Leave the page if active club changes, use subscribe instead of $: for immediate effect
   const unsubscribeClub = activeClub.subscribe((update) => {
     if (session && update.id != clubId) {
-      goto('/sessions');
+            goto(resolve('/sessions'));
     }
     clubId = update.id;
   });
 
   $: {
     unsubscribeSession();
-    unsubscribeSession = watchSession($page.params.sessionId, (update: any) => {
+    unsubscribeSession = watchSession(page.params.sessionId, (update: Session) => {
       session = update;
     });
   }
@@ -46,7 +47,7 @@
     }
     if (confirm(`Delete session ${session.number}?`)) {
       deleteSession(session.id);
-      goto('/sessions');
+            goto(resolve('/sessions'));
     }
   }
 
@@ -61,9 +62,9 @@
   async function jumpSession(forward: boolean) {
     let result = await findSession($activeClub.id, session.number + (forward ? 1 : -1));
     if (result) {
-      goto(`/session/${result}`);
+            goto(resolve('/(app)/session/[sessionId]', { sessionId: result }));
     } else {
-      goto('/sessions');
+            goto(resolve('/sessions'));
     }
   }
 </script>
@@ -75,9 +76,9 @@
 <h1>
   Session {session ? session.number : ''}
   <div style:float="right">
-    <a name='back' on:click={() => jumpSession(false)} style:cursor='pointer'>&#x276e</a>
+    <a on:click={() => jumpSession(false)} style:cursor='pointer'>&#x276e</a>
     &#160
-    <a name='next' on:click={() => jumpSession(true)} style:cursor='pointer'>&#x276f</a>
+    <a on:click={() => jumpSession(true)} style:cursor='pointer'>&#x276f</a>
     &#160
   </div>
 </h1>
@@ -110,6 +111,6 @@
     <hr />
 
     <h3>User Notes</h3>
-    <UserNotes sessionId={$page.params.sessionId} />
+    <UserNotes sessionId={page.params.sessionId} />
   {/if}
 {/if}

@@ -1,7 +1,7 @@
 import { render } from '@testing-library/svelte';
-import SessionInfo from '$lib/SessionInfo.svelte';
+import SessionInfo from '#lib/SessionInfo.svelte';
 
-import type { Session } from '$lib/models';
+import type { Session } from '#lib/models.js';
 
 const testInputs = [
     {

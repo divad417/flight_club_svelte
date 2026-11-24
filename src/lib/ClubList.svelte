@@ -1,22 +1,23 @@
 <script lang="ts">
-  import type { Club } from '$lib/models';
-  import { clubs, activeClub } from '$lib/stores';
+  import type { Club } from '#lib/models.js';
+  import { clubs, activeClub } from '#lib/stores.js';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
 
   export let goOnClick: boolean = true;
 
   function onClick(club: Club) {
     if (goOnClick && club == $activeClub) {
-      goto('/sessions');
+            goto(resolve('/sessions'));
     } else {
-      $activeClub = club.id;
+      activeClub.set(club.id);
     }
   }
 </script>
 
 <div class="club-list m-3">
   <div class="list-group">
-    {#each $clubs as club}
+    {#each $clubs as club (club.id)}
       <li
         class="list-group-item list-group-item-action"
         class:active={club == $activeClub}

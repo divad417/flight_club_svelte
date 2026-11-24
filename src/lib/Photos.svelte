@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { Session } from '$lib/models';
-  import { user } from '$lib/stores';
-  import { uploadPhotos, deletePhotos } from '$lib/firebase';
+  import type { Session } from '#lib/models.js';
+  import { user } from '#lib/stores.js';
+  import { uploadPhotos, deletePhotos } from '#lib/firebase.js';
 
   export let session: Session;
   let files: FileList;
@@ -19,7 +19,7 @@
 
 <div class="photos">
   {#if session.photos}
-    {#each session.photos as photo}
+    {#each session.photos as photo (photo)}
       <img class="photo" src={photo} alt="" />
     {/each}
   {/if}

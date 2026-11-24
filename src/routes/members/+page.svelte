@@ -1,15 +1,16 @@
 <script lang="ts">
-  import { user, activeClub } from '$lib/stores';
+  import { user, activeClub } from '#lib/stores.js';
   import { goto } from '$app/navigation';
-  import { leaveClub } from '$lib/firebase';
-  import UpdateClub from '$lib/UpdateClub.svelte';
-  import MemberList from '$lib/MemberList.svelte';
+  import { resolve } from '$app/paths';
+  import { leaveClub } from '#lib/firebase.js';
+  import UpdateClub from '#lib/UpdateClub.svelte';
+  import MemberList from '#lib/MemberList.svelte';
 
   async function onLeaveClub() {
     if (confirm(`Leave ${$activeClub.name}?`)) {
       await leaveClub($user.id, $activeClub);
-      $activeClub = $user.clubs[0];
-      goto('/');
+      activeClub.set($user.clubs[0]);
+            goto(resolve('/(app)'));
     }
   }
 </script>

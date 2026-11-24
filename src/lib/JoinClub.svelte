@@ -1,13 +1,14 @@
 <script lang="ts">
   import type { Unsubscribe } from '@firebase/util';
-  import type { Club } from '$lib/models';
+  import type { Club } from '#lib/models.js';
   import { onMount } from 'svelte';
-  import { user, activeClub } from '$lib/stores';
-  import { watchAllClubs, joinClub } from '$lib/firebase';
+  import { user, activeClub } from '#lib/stores.js';
+  import { watchAllClubs, joinClub } from '#lib/firebase.js';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
 
   let joinClubElement: Element = undefined;
-  let joinClubModal: any;
+  let joinClubModal: InstanceType<typeof import('bootstrap/js/dist/modal.js').default>;
   onMount(async () => {
     const Modal = (await import('bootstrap/js/dist/modal.js')).default;
     joinClubModal = new Modal(joinClubElement);
@@ -30,9 +31,9 @@
   async function onSubmit() {
     await joinClub($user.id, selected);
     unsubscribe();
-    $activeClub = selected.id;
+    activeClub.set(selected.id);
     joinClubModal.hide();
-    goto('/members');
+        goto(resolve('/members'));
   }
 
 </script>
@@ -48,11 +49,11 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3 class="modal-title m-0">Join a Club</h3>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" />
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <ul class="list-group">
-          {#each clubs as club}
+          {#each clubs as club (club.id)}
             <li
               class="list-group-item"
               class:active={club == selected}

@@ -2,22 +2,24 @@
   import type { Unsubscribe } from '@firebase/util';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { Member, memberView, memberCompare, roleView, membersToCsv } from '$lib/models';
-  import { user, activeClub } from '$lib/stores';
-  import { watchMembers, updateMember } from '$lib/firebase';
+  import { resolve } from '$app/paths';
+  import type { Member } from '#lib/models.js';
+  import { memberView, memberCompare, roleView, membersToCsv } from '#lib/models.js';
+  import { user, activeClub } from '#lib/stores.js';
+  import { watchMembers, updateMember } from '#lib/firebase.js';
 
   // Component props
   export let sortKey: string = 'name';
   export let ascending: boolean = true;
 
-  let members: any[] = [];
+  let members: Member[] = [];
   let memberList: Member[] = [];
   let unsubscribe: Unsubscribe = () => undefined;
 
   $: {
     unsubscribe();
     // Get members from the database and watch for changes
-    unsubscribe = watchMembers($activeClub, (update: any[]) => {
+    unsubscribe = watchMembers($activeClub, (update: Member[]) => {
       members = update;
     });
     onDestroy(unsubscribe);
@@ -54,7 +56,7 @@
 
   function onClickMember(member: Member) {
     // Goto a specific member page
-    goto(`/member/${member.id}`);
+        goto(resolve('/(app)/member/[memberId]', { memberId: member.id }));
   }
 </script>
 
@@ -62,8 +64,8 @@
   <table class="table table-striped table-hover">
     <thead>
       <tr>
-        {#each memberView as field}
-          <th width={field.width} on:click={() => onClickColumn(field.key)} style:cursor='pointer'>
+        {#each memberView as field (field.key)}
+          <th style:width={field.width} on:click={() => onClickColumn(field.key)} style:cursor='pointer'>
             {field.text}
             {#if field.key == sortKey}
               <span class="arrow">
@@ -77,8 +79,8 @@
           </th>
         {/each}
         {#if $user.roles.admin}
-          {#each roleView as field}
-            <th class="text-center" width={field.width}>
+          {#each roleView as field (field.key)}
+            <th class="text-center" style:width={field.width}>
               {field.text}
             </th>
           {/each}
@@ -86,15 +88,15 @@
       </tr>
     </thead>
     <tbody>
-      {#each memberList as member}
+      {#each memberList as member (member.id)}
         <tr>
-          {#each memberView as field}
+          {#each memberView as field (field.key)}
             <td on:click={() => onClickMember(member)} style:cursor='pointer'>
               {field.show(member, $activeClub.id)}
             </td>
           {/each}
           {#if $user.roles.admin}
-            {#each roleView as field}
+            {#each roleView as field (field.key)}
               <td class="text-center">
                 <input
                   class="form-check-input"

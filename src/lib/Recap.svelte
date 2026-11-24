@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { Session } from '$lib/models';
-  import { user } from '$lib/stores';
-  import { updateSession } from '$lib/firebase';
+  import type { Session } from '#lib/models.js';
+  import { user } from '#lib/stores.js';
+  import { updateSession } from '#lib/firebase.js';
 
   export let session: Session;
   let editing: boolean = false;
@@ -19,8 +19,7 @@
       bind:value={session.recap}
       class="form-control"
       rows="7"
-      on:focusout={doneEditing}
-    />
+      on:focusout={doneEditing}></textarea>
     <button class="btn btn-light" on:click={doneEditing}>Done</button>
   </div>
 {:else}

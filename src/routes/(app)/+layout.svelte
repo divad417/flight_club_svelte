@@ -1,27 +1,28 @@
 <script lang="ts">
-  import { user, activeClub } from '$lib/stores';
-  import Navbar from '$lib/Navbar.svelte';
-  import Footer from '$lib/Footer.svelte';
-  import Login from '$lib/Login.svelte';
-  import NewUser from '$lib/NewUser.svelte';
+  let { children } = $props();
+  import { user, activeClub } from '#lib/stores.js';
+  import Navbar from '#lib/Navbar.svelte';
+  import Footer from '#lib/Footer.svelte';
+  import Login from '#lib/Login.svelte';
+  import NewUser from '#lib/NewUser.svelte';
 </script>
 
 <Navbar />
 <!-- Require login and active club selected to view pages -->
 {#if $user}
   {#if $activeClub}
-    <slot />
+    {@render children()}
   {:else}
     <NewUser />
   {/if}
 {:else}
   <Login />
 {/if}
-<div class="padding" style="height:50vh" />
+<div class="padding" style="height:50vh"></div>
 <Footer />
 
 <style global lang="scss">
-  @import '../custom';
+  @import '../../custom';
 
   body {
     margin: 0;

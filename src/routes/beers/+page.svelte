@@ -1,5 +1,5 @@
 <script lang="ts">
-  import BeerList from '$lib/BeerList.svelte';
+  import BeerList from '#lib/BeerList.svelte';
 </script>
 
 <svelte:head>

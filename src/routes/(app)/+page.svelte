@@ -1,6 +1,6 @@
 <script lang="ts">
-  import ClubList from '$lib/ClubList.svelte';
-  import JoinClub from '$lib/JoinClub.svelte';
+  import ClubList from '#lib/ClubList.svelte';
+  import JoinClub from '#lib/JoinClub.svelte';
 </script>
 
 <svelte:head>
