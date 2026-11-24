@@ -1,8 +1,23 @@
-import functions = require("firebase-functions");
-import admin = require("firebase-admin");
+import * as functions from "firebase-functions/v1";
+import { initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 
-admin.initializeApp();
-const db = admin.firestore();
+initializeApp();
+const db = getFirestore();
+
+// Shape of the beer documents written by the client (src/lib/models.ts Beer).
+// Firestore snapshots expose unknown-typed data, so reads are cast at this
+// single boundary.
+interface BeerData {
+    club: string;
+    session: number;
+    user: string;
+    name: string;
+    brewery: string;
+    abv: number;
+    score: number;
+    win: boolean;
+}
 
 export const onBeerUpdate = functions.firestore.document("beers/{beerId}").onWrite(async (change) => {
     const club = change.after.exists ? change.after.get("club") : change.before.get("club");
@@ -41,7 +56,7 @@ export const updateAll = functions.firestore.document("testing/{id}").onWrite(as
 
 async function updateSession(club: string, session: number) {
     const beersQuery = await db.collection("beers").where("club", "==", club).where("session", "==", session).get();
-    const beers = beersQuery.docs.map(beer => beer.data());
+    const beers = beersQuery.docs.map(beer => beer.data() as BeerData);
     const winningBeer = beers.find(beer => beer.win == true);
     const sessionData = {
         winner: winningBeer != undefined ? winningBeer.user : null,
@@ -67,7 +82,7 @@ async function updateUser(user: string, clubs: string[]) {
     const data: { [id: string]: MemberData; } = {};
     for (const club of clubs) {
         const beerQuery = await db.collection("beers").where("club", "==", club).where("user", "==", user).get();
-        const beers = beerQuery.docs.map(beer => beer.data());
+        const beers = beerQuery.docs.map(beer => beer.data() as BeerData);
         data[club] = {
             wins: beers.filter(beer => beer.win == true).length,
             avg_score: beers.map(beer => beer.score).reduce((curr, next) => curr + next, 0) / beers.length,
